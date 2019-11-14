@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-import re, os
-import requests
+import re, os, requests, sqlite3
 
 '''
 遍历指定目录 md 和 html 的文档列表
@@ -8,21 +7,24 @@ import requests
 
 
 def list_files(files_path):
-    current_files = os.listdir(files_path)
     all_files = []
-    for file_name in current_files:
-        full_file_name = os.path.join(files_path, file_name)
-        file_suffix_name = os.path.splitext(full_file_name)[1]
-        if file_suffix_name == '.md' or file_suffix_name == '.html':
-            # print(os.path.dirname(full_file_name))
-            all_files.append(full_file_name)
-        if os.path.isdir(full_file_name):
-            next_level_files = list_files(full_file_name)
-            all_files.extend(next_level_files)
+    if os.path.isdir(files_path):
+        current_files = os.listdir(files_path)
+        for file_name in current_files:
+            full_file_name = os.path.join(files_path, file_name)
+            file_suffix_name = os.path.splitext(full_file_name)[1]
+            if file_suffix_name == '.md' or file_suffix_name == '.html':
+                # print(os.path.dirname(full_file_name))
+                all_files.append(full_file_name)
+            if os.path.isdir(full_file_name):
+                next_level_files = list_files(full_file_name)
+                all_files.extend(next_level_files)
+    else:
+        all_files.append(files_path)
     return all_files
 
 
-def find_all_url(text):
+def find_all_url(filter_file, file_path, text):
     http_url = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
     pattern = re.compile(http_url)  # 匹配模式
     urls = []
@@ -30,24 +32,27 @@ def find_all_url(text):
         uu = uu.replace(")", "").replace("(", "").replace("[", "").replace("]", "")
         if uu[-1] in (",", ".", ";", "]", "!", ":", "**"):
             uu = uu[:-1]
-        if not need_not_to_check(uu):
-            urls.append(uu)
+        if not filter_file:
+            urls.append([uu, file_path])
+        elif not need_not_to_check(uu):
+            urls.append([uu, file_path])
     return urls
 
 
-def need_not_to_check(url):
-    if url.startswith("https://dl.k8s.io/"):
-        return True
-    if url.startswith("https://docs.k8s.io"):
-        return True
-    if url.startswith("https://github.com/kubernetes/kubernetes/pull/"):
-        return True
-    if url.startswith("http://relnotes.k8s.io/"):
-        return True
-    if url.startswith("https://github.com/"):
-        return True
-    if url.startswith("https://git.k8s.io/"):
-        return True
+def need_not_to_check(url, filter_file=True):
+    if filter_file:
+        if url.startswith("https://dl.k8s.io/"):
+            return True
+        if url.startswith("https://docs.k8s.io"):
+            return True
+        # if url.startswith("https://github.com/kubernetes/kubernetes/pull/"):
+        #     return True
+        if url.startswith("http://relnotes.k8s.io/"):
+            return True
+        # if url.startswith("https://github.com/"):
+        #     return True
+        if url.startswith("https://git.k8s.io/"):
+            return True
     return False
 
 
@@ -56,31 +61,108 @@ def is_ok(url, file_path):
         res = requests.get(url, timeout=10)
         if res.ok:
             # print(url, "-->ok")
-            pass
+            return 1
         else:
-            print(res.status_code, file_path, url, "-->fail")
+            print(res.status_code, "--->", file_path, url, "--> fail")
+            return 1
     except Exception as e:
         print(file_path, url, e)
+        return 0
 
 
-def job():
-    all_file_path = list_files("D:\\opensource\\istio.io\\content\\zh")
+def init_db():
+    # 连接数据库
+    conn = sqlite3.connect("./db.sqlite")
+    # 创建一个 cursor
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM sqlite_master WHERE type='table' AND name='urls'")
+    is_pr = cursor.fetchone()
+    if is_pr is None:
+        cursor.execute('''create table urls(
+                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    url varchar(1000),
+                                    path varchar(1000),
+                                    process Int(2)
+                                    )''')
+        print("create table urls")
+    else:
+        print("table urls exists")
+
+    cursor.execute("SELECT * FROM sqlite_master WHERE type='table' AND name='url_problems'")
+    is_pr = cursor.fetchone()
+    if is_pr is None:
+        cursor.execute('''create table url_problems(
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        url varchar(1000),
+                                        path varchar(1000)
+                                        )''')
+        print("create table url_problems")
+    else:
+        print("table url_problems exists")
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def insert_all_url(url_data):
+    # 连接数据库
+    conn = sqlite3.connect("./db.sqlite")
+    # 创建一个 cursor
+    cursor = conn.cursor()
+    for url in url_data:
+        cursor.execute("select * from urls where url = '" + url[0] + "'")
+        is_exist = cursor.fetchone()
+        if is_exist is None:
+            # process 0 未处理 1 已处理
+            print("insert into urls (url,path,process) values ('" + url[0] + "', '" + url[1] + "',0)")
+            cursor.execute("insert into urls (url,path,process) values ('" + url[0] + "', '" + url[1] + "',0)")
+        else:
+            print(url[0], "db existed")
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def get_data(filter_file=True):
+    all_file_path = list_files(path)
     for file_path in all_file_path:
+        print(file_path)
         with open(file_path, encoding="utf-8") as f:
-            all_url = find_all_url(f.read())
-            for i in all_url:
-                # is_ok(i, file_path)
-                print(i)
+            url_data = find_all_url(filter_file, file_path, f.read())
+            insert_all_url(url_data)
 
 
-def test():
-    with open("content.md", encoding="utf-8") as f:
-        content = f.read()
-    all_url = find_all_url(content)
-    for i in all_url:
-        is_ok(i, "content.md")
+def analysis():
+    # 连接数据库
+    conn = sqlite3.connect("./db.sqlite")
+    # 创建一个 cursor
+    cursor = conn.cursor()
+    cursor.execute("select url,path from urls where  process=0")
+    all_data = cursor.fetchall()
+    for i in all_data:
+        result = is_ok(i[0], i[1])
+        if result == 1:
+            cursor.execute("update  urls set process=1 where url = '" + i[0] + "'")
+        else:
+            cursor.execute("select * from urls where url = '" + i[0] + "'")
+            url_exist = cursor.fetchone()
+            if url_exist is not None:
+                sql = " insert into url_problems (url,path) values (?,?) "
+                cursor.execute(sql, (i[0], i[1]))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def job(filter_file):
+    init_db()
+    get_data(filter_file)
+    analysis()
 
 
 if __name__ == '__main__':
-    # job()
-    test()
+    """
+    跑数据之前请删除无关的文件夹 如 kubernetes 的 vendor  third_party
+    """
+    path = "D:\\opensource\\kubernetes\\api"
+    job(filter_file=False)
