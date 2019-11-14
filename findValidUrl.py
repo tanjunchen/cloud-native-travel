@@ -29,8 +29,8 @@ def find_all_url(filter_file, file_path, text):
     pattern = re.compile(http_url)  # 匹配模式
     urls = []
     for uu in re.findall(pattern, text):
-        uu = uu.replace(")", "").replace("(", "").replace("[", "").replace("]", "")
-        if uu[-1] in (",", ".", ";", "]", "!", ":", "**"):
+        uu = uu.replace(")", "").replace("(", "").replace("[", "").replace("]", "").replace("**","")
+        if uu[-1] in (",", ".", ";", "]", "!", ":", "*"):
             uu = uu[:-1]
         if not filter_file:
             urls.append([uu, file_path])
@@ -162,7 +162,7 @@ def job(filter_file):
 
 if __name__ == '__main__':
     """
-    跑数据之前请删除无关的文件夹 如 kubernetes 的 vendor  third_party
+    跑数据之前请删除无关的文件夹 如 kubernetes 的 vendor  third_party 减少扫描次数
     """
-    path = "D:\\opensource\\kubernetes\\api"
+    path = "../minikube"
     job(filter_file=False)
