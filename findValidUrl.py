@@ -46,8 +46,8 @@ def need_not_to_check(url, filter_file=True):
             return True
         if url.startswith("https://docs.k8s.io"):
             return True
-        # if url.startswith("https://github.com/kubernetes/kubernetes/pull/"):
-        #     return True
+        if url.startswith("https://github.com/kubernetes/kubernetes/pull/"):
+            return True
         if url.startswith("http://relnotes.k8s.io/"):
             return True
         # if url.startswith("https://github.com/"):
@@ -59,7 +59,7 @@ def need_not_to_check(url, filter_file=True):
 
 def is_ok(url, file_path):
     try:
-        res = requests.get(url, timeout=10)
+        res = requests.get(url, timeout=3)
         if res.ok:
             # print(url, "-->ok")
             return 1
@@ -165,5 +165,5 @@ if __name__ == '__main__':
     """
     跑数据之前请删除无关的文件夹 如 kubernetes 的 vendor  third_party 减少扫描次数
     """
-    path = "/home/k8s-master/goproject/bocloud/website/content/en/"
+    # path = "/home/k8s-master/goproject/bocloud/website/content/en/"
     job(filter_file=False)
