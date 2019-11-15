@@ -29,7 +29,8 @@ def find_all_url(filter_file, file_path, text):
     pattern = re.compile(http_url)  # 匹配模式
     urls = []
     for uu in re.findall(pattern, text):
-        uu = uu.replace(")", "").replace("(", "").replace("[", "").replace("]", "").replace("**","")
+        uu = uu.replace(")", "").replace("(", "").replace("[", "")\
+            .replace("]", "").replace("**","").replace("'","")
         if uu[-1] in (",", ".", ";", "]", "!", ":", "*"):
             uu = uu[:-1]
         if not filter_file:
@@ -156,7 +157,7 @@ def analysis():
 
 def job(filter_file):
     init_db()
-    get_data(filter_file)
+    # get_data(filter_file)
     analysis()
 
 
@@ -164,5 +165,5 @@ if __name__ == '__main__':
     """
     跑数据之前请删除无关的文件夹 如 kubernetes 的 vendor  third_party 减少扫描次数
     """
-    path = "../minikube"
+    path = "/home/k8s-master/goproject/bocloud/website/content/en/"
     job(filter_file=False)
