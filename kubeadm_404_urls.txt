@@ -1,0 +1,8 @@
+kubeadm\CONTRIBUTING.md https://github.com/kubernetes/kubernetes/blob/master/docs/devel/development.md#godep-and-dependency-management
+kubeadm\CONTRIBUTING.md https://github.com/kubernetes/community/blob/master/contributors/devel/testing.md
+kubeadm\docs\managing-e2e-tests.md https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/sig-cluster-lifecycle/kubeadm-kind.yaml
+kubeadm\docs\managing-e2e-tests.md https://github.com/kubernetes/kubeadm/kinder
+kubeadm\docs\managing-e2e-tests.md https://github.com/kubernetes/kubeadm/blob/master/kinder/ci/workflows/upgrade-stable-master.yaml
+kubeadm\docs\testing-pre-releases.md https://github.com/kubernetes/community/blob/master/contributors/devel/bazel.md
+kubeadm\docs\design\design_v1.8.md https://raw.githubusercontent.com/cncf/artwork/master/kubernetes/certified-kubernetes/1.8/color/certified-kubernetes-1.8-color.png
+ubeadm\docs\design\design_v1.9.md https://raw.githubusercontent.com/cncf/artwork/master/kubernetes/certified-kubernetes/1.9/color/certified-kubernetes-1.9-color.png

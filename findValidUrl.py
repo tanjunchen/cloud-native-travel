@@ -59,7 +59,7 @@ def need_not_to_check(url, filter_file=True):
 
 def is_ok(url, file_path):
     try:
-        res = requests.get(url, timeout=3)
+        res = requests.get(url, timeout=6)
         if res.ok:
             # print(url, "-->ok")
             return 1
@@ -157,7 +157,7 @@ def analysis():
 
 def job(filter_file):
     init_db()
-    # get_data(filter_file)
+    get_data(filter_file)
     analysis()
 
 
@@ -165,5 +165,5 @@ if __name__ == '__main__':
     """
     跑数据之前请删除无关的文件夹 如 kubernetes 的 vendor  third_party 减少扫描次数
     """
-    # path = "/home/k8s-master/goproject/bocloud/website/content/en/"
+    path = "D:\\opensource\\prometheus\\"
     job(filter_file=False)

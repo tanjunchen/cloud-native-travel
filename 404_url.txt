@@ -1,0 +1,10 @@
+|docs\examples\coreos-kops-tests-multimaster.md |https://github.com/kubernetes/kops/blob/master/docs/commands.md|
+|docs\releases\1.12-NOTES.md |https://github.com/MathieuMailhos|
+|docs\releases\1.13-NOTES.md |https://github.com/vainu-arto|
+|docs\releases\1.8-NOTES.md |https://github.com/Moshe-Immerman|
+|docs\releases\1.9-NOTES.md |https://github.com/UlisesTJ|
+|docs\releases\1.9-NOTES.md |https://github.com/kubernetes/kops/pull/4592|
+|docs\releases\1.9-NOTES.md |https://github.com/mycapatin|
+|docs\single-to-multi-master.md |https://github.com/kubernetes/kops/blob/master/docs/high_availability.md|
+|hooks\nvidia-device-plugin\README.md |https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml|
+|upup\models\cloudup\resources\addons\external-dns.addons.k8s.io\README.md |https://github.com/kubernetes-incubator/external-dns/blob/master/docs/tutorials/getting_started/aws.md|
