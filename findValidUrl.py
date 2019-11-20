@@ -29,8 +29,8 @@ def find_all_url(filter_file, file_path, text):
     pattern = re.compile(http_url)  # 匹配模式
     urls = []
     for uu in re.findall(pattern, text):
-        uu = uu.replace(")", "").replace("(", "").replace("[", "")\
-            .replace("]", "").replace("**","").replace("'","")
+        uu = uu.replace(")", "").replace("(", "").replace("[", "") \
+            .replace("]", "").replace("**", "").replace("'", "")
         if uu[-1] in (",", ".", ";", "]", "!", ":", "*"):
             uu = uu[:-1]
         if not filter_file:
@@ -127,10 +127,13 @@ def insert_all_url(url_data):
 def get_data(filter_file=True):
     all_file_path = list_files(path)
     for file_path in all_file_path:
-        print(file_path)
-        with open(file_path, encoding="utf-8") as f:
-            url_data = find_all_url(filter_file, file_path, f.read())
-            insert_all_url(url_data)
+        if file_path.__contains__("vendor") or file_path.__contains__("third_party"):
+            pass
+        else:
+            print(file_path)
+            with open(file_path, encoding="utf-8") as f:
+                url_data = find_all_url(filter_file, file_path, f.read())
+                insert_all_url(url_data)
 
 
 def analysis():
@@ -165,5 +168,5 @@ if __name__ == '__main__':
     """
     跑数据之前请删除无关的文件夹 如 kubernetes 的 vendor  third_party 减少扫描次数
     """
-    path = "D:\\opensource\\prometheus\\"
+    path = "/home/k8s-master/goproject/bocloud/kubernetes/CHANGELOG-1.17.md"
     job(filter_file=False)

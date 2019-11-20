@@ -10,7 +10,7 @@ from redis import Redis
 from concurrent.futures import ThreadPoolExecutor
 
 
-redis = Redis(host='localhost', port=6378, db=15)
+redis = Redis(host='localhost', port=6379, db=15)
 ua = UserAgent()
 
 
@@ -57,7 +57,7 @@ def spider():
                 res = requests.get(url, headers={'User-Agent': ua.random, 'Connection': 'close'}, timeout=15)
                 if res.status_code == 200:
                     redis.lpush(':legal_url', json.dumps([url, path]))
-                    print(url)
+                    #print(url)
                 elif res.status_code == 404:
                     print("404-->", url, path)
             except TimeoutError as e:
@@ -93,5 +93,5 @@ def main(filepath):
 
 
 if __name__ == '__main__':
-    path = 'd:\\opensource\\grpc'
+    path = '/home/k8s-master/goproject/bocloud/kubernetes'
     main(path)
