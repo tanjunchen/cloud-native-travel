@@ -4,9 +4,8 @@ def job():
         content = f.read()
     ii = 1
     for i in content.splitlines():
-        if i.__contains__("kubernetes"):
-            print("|"+str(ii) + i + " |")
-            ii = ii + 1
+        print("|" + str(ii) + "|" + i + " |")
+        ii = ii + 1
 
 
 if __name__ == '__main__':
