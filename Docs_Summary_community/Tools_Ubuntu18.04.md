@@ -25,11 +25,11 @@
     当添加完 PPA 源之后，系统就会在 /etc/apt/source.list.d 文件夹里创建两个文件
     步骤：
     备份源文件
-    sudo cp /etc/apt/source.list /etc/apt/source.list.bak
+    sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
     查看系统版本信息
     使用 lsb_release -c 查看系统版本信息，可以看到 ubuntu18.04 的版本代码名称是 bionic
     更改软件源列表 注意系统对应的版本代码 18.04 -> bionic
-    sudo vim /etc/apt/source.list
+    sudo vim /etc/apt/sources.list
     ```
     deb http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
     deb-src http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
@@ -71,7 +71,7 @@
     ```
     输入法安装成功后要重新进入系统生效，重新登录或重启。
     [推荐博客](https://blog.csdn.net/lupengCSDN/article/details/80279177)
-5. 卸载与安装 python3(卸载原有python)
+5. 卸载与安装 python3(卸载原有python)  慎重操作
     ubuntu 18.04 默认带着的 python 版本不是最新版，因此需要手动安装最新版。 查看 python 指向
     ls -l /usr/bin | grep python
     卸载 python 3
@@ -276,6 +276,7 @@
     sudo apt-get install shutter 安装失败运行 sudo apt-get install -f 然后重新安装
 13. 安装 go 环境
     安装 go
+    参考 https://golang.org/doc/install
     解决 go 被墙的问题
 14. 安装 shadowsocks 设置代理
     https://wylu.github.io/posts/eed37a90/
@@ -283,3 +284,15 @@
 16. github 搭建自己的私有仓库
     https://yeasy.gitbooks.io/docker_practice/repository/registry.html
     https://www.cnblogs.com/dfengwei/p/7150455.html
+
+
+17. 1.安装ntpdate工具  同步网络时间
+    sudo apt-get install ntpdate
+    sudo cp /usr/share/zoneinfo/Asia/Chongqing /etc/localtime
+    1.安装ntpdate工具
+    # sudo apt-get install ntpdate
+    2.设置系统时间与网络时间同步
+    # ntpdate cn.pool.ntp.org
+    3.将系统时间写入硬件时间
+    # hwclock -w
+    

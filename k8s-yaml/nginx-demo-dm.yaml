@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-demo
+  minReadySeconds: 10
+  template:
+    metadata:
+      labels:
+        app: nginx-demo
+        version: v1
+    spec:
+      containers:
+        - name: deployment-demo
+          image: nginx:1.10.1
+          ports:
+            - containerPort: 80
+              protocol: TCP
+
+
+版本升级后的配置
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-demo
+  minReadySeconds: 10
+  template:
+    metadata:
+      labels:
+        app: nginx-demo
+        version: v2
+    spec:
+      containers:
+        - name: deployment-demo
+          image: nginx:1.11.9
+          ports:
+            - containerPort: 80
+              protocol: TCP
+

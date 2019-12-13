@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-update
+  template:
+    metadata:
+      labels:
+        app: image-update
+    spec:
+      containers:
+      - name: nginx
+        image: registry.cn-beijing.aliyuncs.com/mrvolleyball/nginx:v1
+        imagePullPolicy: Always
