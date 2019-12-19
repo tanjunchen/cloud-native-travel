@@ -1,7 +1,0 @@
-istio.io\content\en\blog\2019\data-plane-setup\index.md https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
-istio.io\content\en\news\2019\istio-security-2019-002\index.md https://istio.io/about/security-vulnerabilities//about/security-vulnerabilities/
-istio.io\README.md https://github.com/istio/istio.io/blob/master/scripts/gen_archive_site.sh
-
-
-istio.io\content\en\docs\reference\config\policy-and-telemetry\adapters\apigee\index.html https://istioservices.apigee.net/edgemicro
-istio.io\content\zh\docs\reference\config\policy-and-telemetry\adapters\signalfx\index.html https://istio.io/docs/reference/config/policy-and-telemetry/adapters/signalfx.html

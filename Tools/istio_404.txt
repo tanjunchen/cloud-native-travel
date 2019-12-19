@@ -1,7 +1,0 @@
-istio\mixer\adapter\bypass\config\adapter.bypass.config.pb.html https://istio.io/docs/reference/config/template/metric/
-istio\mixer\adapter\bypass\config\adapter.bypass.config.pb.html https://istio.io/docs/reference/config/template/checknothing/
-istio\mixer\adapter\bypass\config\adapter.bypass.config.pb.html https://istio.io/docs/reference/config/template/reportnothing/
-istio\mixer\adapter\bypass\config\adapter.bypass.config.pb.html https://istio.io/docs/reference/config/template/quota/
-
-
-istio\mixer\adapter\signalfx\config\adapter.signalfx.config.pb.html https://istio.io/docs/reference/config/policy-and-telemetry/adapters/signalfx.html
