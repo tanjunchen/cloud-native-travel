@@ -1,4 +1,4 @@
-# 安装完 Ubuntu18.04 后常见操作
+# 安装完 Ubuntu 18.04 后常见操作
 1. 设置 root 密码
     打开终端输入命令
     ```
@@ -31,16 +31,16 @@
     更改软件源列表 注意系统对应的版本代码 18.04 -> bionic
     sudo vim /etc/apt/sources.list
     ```
-    deb http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
-    deb-src http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
-    deb http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
-    deb-src http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
-    deb http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
-    deb-src http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
-    deb http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
-    deb-src http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
-    deb http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
-    deb-src http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
     ```
     更新软件列表
     sudo apt update 
@@ -133,6 +133,8 @@
 7. 安装 SSH 服务器
     参考[教程](https://linuxize.com/post/how-to-enable-ssh-on-ubuntu-18-04/)
     [设置ssh开机启动](https://blog.csdn.net/fandroid/article/details/86799932)
+    sudo apt update
+    sudo apt install openssh-server
     ```
     # 开机自动启动ssh命令
     sudo systemctl enable ssh

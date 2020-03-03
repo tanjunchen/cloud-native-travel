@@ -1,3 +1,132 @@
+更改用户密码
+sudo passwd root
+
+安装基本工具
+sudo apt update && \
+sudo apt -y upgrade && \
+sudo apt install -y vim \
+curl \
+apt-transport-https \
+ca-certificates \
+software-properties-common
+
+更改 apt 源
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
+sudo vim /etc/apt/sources.list
+
+deb http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
+
+sudo apt-get update
+sudo apt-get upgrade -y
+
+设置静态 IP
+sudo vim /etc/netplan/01-network-manager-all.yaml 
+network:
+    ethernets:
+        ens33:
+            addresses:
+            - 192.168.4.254/24
+            dhcp4: false
+            gateway4: 192.168.4.2
+            nameservers:
+                addresses:
+                - 8.8.8.8
+                search: []
+    version: 2
+sudo netplan apply
+
+修改主机名
+sudo vim /etc/hosts
+
+192.168.17.150	k8s-master
+192.168.17.151	k8s-node01
+192.168.17.152	k8s-node02
+
+禁用 swap
+
+sudo swapoff -a
+
+设置swap开机不启动
+
+$ sudo vim /etc/fstab
+# 注释掉swapfile这一行
+
+关闭防火墙
+sudo ufw disable
+
+禁用 selinux
+sudo vim /etc/selinux/config
+SELINUX=disabled
+
+
+安装 docker 18.06.3-ce
+
+sudo mkdir -p /etc/docker
+
+sudo  vim /etc/docker/daemon.json
+
+{
+"exec-opts": ["native.cgroupdriver=systemd"],
+"registry-mirrors":["https://s2aodw6o.mirror.aliyuncs.com"],
+"storage-driver": "overlay2"
+}
+
+
+配置 docker
+
+# 卸载旧版本的docker
+$ sudo apt remove docker docker-engine docker.io
+# 添加GPG key，用阿里云的
+$ curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
+# 添加镜像，用阿里云的
+$ sudo add-apt-repository \
+"deb [arch=amd64] https://mirrors.aliyun.com/docker-ce/linux/ubuntu \
+$(lsb_release -cs) \
+stable"
+# 查看可用的docker版本
+$ apt-cache madison docker-ce
+# 安装docker
+$ sudo apt install -y docker-ce=18.06.3~ce~3-0~ubuntu
+# 设置开机启动
+$ sudo systemctl enable docker && sudo systemctl start docker
+# 将当前用户加入docker组
+$ sudo usermod -aG docker $(whoami)
+
+sudo apt install -y docker-ce=18.06.3~ce~3-0~ubuntu
+
+
+
+安装 kubeadm, kubectl, kubelet
+
+sudo curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key add -
+sudo tee /etc/apt/sources.list.d/kubernetes.list <<-'EOF'
+deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main
+EOF
+sudo apt update 
+
+查看可用版本
+apt-cache madison kubeadm
+
+sudo apt install -y kubelet=1.16.3-00 kubeadm=1.16.3-00 kubectl=1.16.3-00
+
+设置开机启动
+
+sudo systemctl enable kubelet && sudo systemctl start kubelet
+
+sudo kubeadm init --image-repository registry.aliyuncs.com/google_containers --kubernetes-version v1.16.3  --pod-network-cidr=10.244.0.0/16
+
+===========================================================================================================================================================================================
+
+sss
 sudo kubeadm init --image-repository registry.aliyuncs.com/google_containers --pod-network-cidr=10.244.0.0/16
 
 kubectl run --generator=run-pod/v1 -i --tty load-generator --image=busybox /bin/sh
@@ -121,7 +250,7 @@ kubectl get nodes -o wide
 10) 提示如何注册其他节点到 Cluster
 
 
-# 重新启动电脑，使用free -m查看分区状态
+# 重新启动电脑，使用 free -m 查看分区状态
 
 Pod
 
@@ -2605,3 +2734,929 @@ FIELDS:
 
 kubernetes 容器编排之定义环境变量以及通过 downwardapi 把 pod 信息作为环境变量传入容器内
 
+容器内的操作往往都是自动化的,而不像在windows会有图形界面提示输入信息或者像在linux有交互式命令可以输入程序需要的数据.也就是程序运行时需要的参数无法交互式指定,不同程序读取配置的方式又各式各样,这种情况下读取环境变量是比较通用的做法
+
+容器的隔离性,在k8s里,pod是最小的逻辑单元,关于容器运行时的很多信息(pod的ip,节点的ip,申请的cpu资源,内存资源)都存在pod里,但是有些时候pod内的容器想要知道这些信息,然而容器无法直接读取到pod的所有信息,kubernetes本身提供了download ap(下面交介绍)i来把pod的信息传递给容器,其实就是通过环境变量把pod的信息传递给容器.
+
+envar-demo.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: envar-demo
+  labels:
+    purpose: demonstrate-envars
+spec:
+  containers:
+  - name: envar-demo-container
+    image: tutum/hello-world
+    env:
+    - name: DEMO_GREETING
+      value: "Hello from the environment"
+    - name: DEMO_FAREWELL
+      value: "Such a sweet sorrow"
+
+downwardapi介绍及简单使用
+
+对于一些容器类型,特别是有状态的,它运行的时候可能需要知道外部依附于pod的信息,比如pod的ip,集群ip,pod申请的内存和cpu数量等.这时候可以通过环境变量把这些依附于pod的字段信息传入到容器内容.另一种方式是通过DownwardAPIVolumeFiles把信息传入到容器内容,这两种方式合在一起被称作downward api
+
+使用pod的字段值作为环境变量
+
+dapi-envars-fieldref.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dapi-envars-fieldref
+spec:
+  containers:
+    - name: test-container
+      image: tutum/hello-world
+      command: [ "sh", "-c"]
+      args:
+      - while true; do
+          echo -en '\n';
+          printenv MY_NODE_NAME MY_POD_NAME MY_POD_NAMESPACE;
+          printenv MY_POD_IP MY_POD_SERVICE_ACCOUNT;
+          sleep 10;
+        done;
+      env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: MY_POD_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
+  restartPolicy: Never
+
+kubectl技巧之通过go-template截取属性
+
+在使用kubectl get获取资源信息的时候,可以通过-o(--output简写形式)指定信息输出的格式,如果指定的是yaml或者json输出的是资源的完整信息,实际工作中,输出内容过少则得不到我们想要的信息,输出内容过于详细又不利于快速定位的我们想要找到的内容,其实-o输出格式可以指定为go-template然后指定一个template,这样我们就可以通过go-template获取我们想要的内容.go-template与kubernetes无关,它是go语言内置的一种模板引擎.这里不对go-template做过多解释,仅介绍在kubernetes中获取资源常用的语法,想要获取更多内容,大家可以参考相关资料获取帮助.
+
+取pod使用镜像的ip
+
+
+kubectl技巧之通过jsonpath截取属性
+
+前面一节我们介绍了使用go-template截取属性,go-template功能非常强大,可以定义变量,使用流程控制等,这是jsonpath所不具备的.然而,jsonpth使用的时候更为灵活.通过上一节我们发现,我们想要找到某个具体属性,必须从最外层一层层向内找到具体属性,这对于嵌套层次非常深的yaml对象来说操作是非常繁琐的.而使用jsonpath只需要知道顶层对象,然后可以省略中间的对象,递归查找直接找到我们想要的属性,这在很多时候对我们在不清楚对象的层次但是清楚知道某个属性名称的时候获取这个属性的值是非常有帮助的.并且jsonpath可以使用下标索引数组对象,这在实际工作中也是非常有帮助的(比如虽然pod里可以包含多个containers,但是很多时候一个pod里只有一个container,使用go-template我们为了找到这个对象需要写一个遍历表达式,而使用jsonpath可以直接取第0个对象,省去了写循环的麻烦),还有一点很重要的是jsonpath是一个标准,这对于熟悉jsonpath的开发者来说使用起来方便很多.
+
+jsonpath模板使用一对花括号({})把jsonpath表达式包含在里面(go-template是双花括号).除了标准jsonpath语法外,kubernetes jsonpath模板还额外支持以下语法:
+
+用""双引号来引用JSONPath表达式中的文本
+
+使用range和end来遍历集合(这点和go-template类似)
+
+使用负数来从尾部索引集合
+
+kubernetes管理之使用yq工具截取属性
+
+前面我们讲解过使用go-template或者jsonpath格式(kubectl get 资源 --output go-tempalte(或jsonpath))来截取属性的值,并且我们比较了使用它们较使用grep,awk等字符串截取在准确获取属性值方面的优势.然而更多时候我们是查看属性,使用grep仅能定位到关键字所在行(或者前后若干行),并不能准确获取一个对象的完整属性.而使用go-template或者jsonpath来截取只能截取普通对象,如果是数组类型就会展示为map[xxx],可读性不是很强,并且内容很长的时候格式杂乱一团(即便使用linux上的tr命令进行整理,整理后的格式也不能保持原有的样式).这里推荐一款linux上的yaml命令行处理工具
+
+yq命令不但可以处理kubernetes的配置文件,还可以处理其它任意类型的yaml文件,不但可以查询,还可以修改yaml里的内容,这对于我们想要动态更改yaml里的内容非常有帮助的
+
+页面里介绍了在新旧ubuntu系统里如何通过snap和apt-get安装,以及在macos系统上如何通过brew来安装.对于centos系统,进入上面页面切换到release里面,下载完成后放到/usr/bin/yq目录下就可以运行了.
+
+kubernetes集群管理之通过 jq 来截取属性
+
+jq工具相比yq,它更加成熟,功能也更加强大,主要表现在以下几个方面
+
+支持递归查找(对我们平时查看文件很方便)
+
+支持条件过滤
+
+支持控制语句
+
+支持数组范围索引
+
+
+kubernetes 集群管理常用命令一
+
+kubectl get po --namespace={default,kube-system}
+
+kubectl get deployment -o=name
+
+kubectl get po --all-namespaces -o wide --field-selector=spec.nodeName=k8s-node2
+
+kubectl get pod --field-selector=status.phase!=Running
+
+
+kubernetes集群管理命令(二)
+
+
+按节点排序后的结果
+kubectl get pod -n=kube-system -owide|sort -k 7
+
+kubectl get pod --sort-by='{.spec.nodeName}' -owide -n=kube-system
+
+kubectl get po -n=kube-system --sort-by='{status.startTime}' -owide
+
+kubectl get pod --sort-by=.status.startTime  -o=custom-columns=name:.metadata.name,startTime:.status.startTime -n=kube-system
+
+kubectl get events --sort-by=.metadata.creationTimestamp
+
+
+kubectl get pod consul-0 -ogo-template='{{range .spec.containers}}{{.image}}{{end}}'
+consul:latest
+
+kubectl get pod consul-0 -ojsonpath='{range .spec.containers[*]}{.image}{end}'
+consul:latest
+
+kubectl get po consul-0 -oyaml|yq r - spec.containers[*].image
+- consul:latest
+
+kubectl get po consul-0 -ojson|jq .spec.containers[].image
+"consul:latest"
+
+kubernetes集群管理命令(三)
+
+kubectl get deploy --all-namespaces
+
+kubectl get deploy helloworld -ojson|jq -r -j '.spec.selector.matchLabels|to_entries|.[]|"\(.key)=\(.value),"'
+
+ kubectl get deploy helloworld -ojson|jq -r -j '.spec.selector.matchLabels|to_entries|.[]|"\(.key)=\(.value),"'|sed "s/.$//"
+
+
+ for item in $( kubectl get pod --output=name); do kubectl get "$item" --output=json | jq -r '.metadata.labels | to_entries | .[] | " \(.key)=\(.value)"'; done
+
+for item in $( kubectl get pod --output=name); do printf "Labels for %s\n" "$item"; kubectl get "$item" --output=json | jq -r '.metadata.labels | to_entries | .[] | " \(.key)=\(.value)"'; done
+
+for item in $( kubectl get pod --output=name); do printf "Labels for %s\n" "$item"; kubectl get "$item" --output=json | jq -r '.metadata.labels | to_entries | .[] | " \(.key)=\(.value)"';printf "\n"; done
+
+
+kubernetes 之常见故障排除(一)
+
+安装过程中出现 ebtables or some similar executable not found
+
+在执行kubeadm init中出现以下警告
+
+[preflight] WARNING: ebtables not found in system path
+[preflight] WARNING: ethtool not found in system path
+这可能是因为你的操作系统里没有安装ebtables, ethtool,可以执行以下命令安装
+
+对于ubuntu/debian用户,执行apt install ebtables ethtool
+
+对于centos/Fedora用户,执行yum install ebtables ethtool
+
+
+
+执行kubeadm init时挂起waiting for the control plane to become ready
+如题,在执行 kubeadm init 后,等到出现下面内容后命令一直挂起
+
+[apiclient] Created API client, waiting for the control plane to become ready
+这可能是由多种原因引起的,最为常见的如下:
+
+网络连接问题.请排查网络连接是否正常.
+kubelet 使用的默认的cgroup driver和docker使用的不一样,通过查看(/var/log/messages)或者执行journalctl -u kubelet看看是否有以下错误信息:
+error: failed to run Kubelet: failed to create kubelet:
+  misconfiguration: kubelet cgroup driver: "systemd" is different from docker cgroup driver: "cgroupfs"
+如果是这样,可以尝试重新安装docker来解决,也可以通过更改kubelet的默认配置来手动与docker匹配
+
+
+执行kubeadm reset时命令挂起Removing kubernetes-managed containers
+sudo kubeadm reset
+[preflight] Running pre-flight checks
+[reset] Stopping the kubelet service
+[reset] Unmounting mounted directories in "/var/lib/kubelet"
+[reset] Removing kubernetes-managed containers
+(block)
+这可能是由于docker中断引起的,可以通过journalctl -fu docker来查看docker的输出日志帮助排查问题.一般情况下可以尝试以下命令来解决问题
+
+sudo systemctl restart docker.service
+sudo kubeadm reset
+
+pod的状态是RunContainerError, CrashLoopBackOff 或 Error
+刚刚执行过kubeadm init,不应该有pod的状态为以上中的状态之一(正常情况下都应该是Running)
+如果执行kubeadm init后出现以上状态,请到官方仓库提出问题. coredns (或者kube-dns)在部署之前状态是Pending
+如果在部署了网络组件(coredns或者kube-dns)之后仍然会出现以上状态,这很可能是你安装的网络组件的问题,你可以对它授予更高的RBAC权限或者安装更新的版本
+
+kubernetes之故障排查和节点维护(二)
+
+案例现场:
+
+测试环境集群本来正常,突然间歇性地出现服务不能正常访问,过一会儿刷新页面又可以正常访问了.进入到服务所在的pod查看输出日志并没有发现异常.使用kubectl get node命令正好发现一个节点是NotReady状态
+
+为了方便观察,使用kubectl get node --watch来观测一段时间,发现k8s-node1节点不断的在Ready和NotReady状态之间切换(使用kubectl get node -o wide可以查看节点的ip信息).
+
+进入到出现问题的节点,使用命令journalctl -f -u kubelet来查看kubelet的日志信息,把错误日志截出来一段搜索一下,发现问题和这个问题基本上是一样的,发现这个问题的时间和github上issue提出的时间是在同一天,也没有看到解决办法.但是基本能确定是因为集群中k8s-node1上的kubernetes版本不一致造成的(从上面截图上可以看到,这个节点的版本是1.14.1其它的都是1.13.1,是怎么升上来的不清楚,可能是其它同事误操作升级导致的)
+
+搜索kubernetes NotReady查看了一些解决经验,很多都是重启docker,重启kubectl等,然后都解决不了问题.于是尝试重置这个节点.
+
+从集群中删除Node
+由于这个节点上运行着服务,直接删除掉节点会导致服务不可用.我们首先使用kubectl drain命令来驱逐这个节点上的所有pod
+
+kubectl drain k8s-node1 --delete-local-data --force --ignore-daemonsets
+以上命令中--ignore-daemonsets往往需要指定的,这是因为deamonset会忽略unschedulable标签(使用kubectl drain时会自动给节点打上不可调度标签),因此deamonset控制器控制的pod被删除后可能马上又在此节点上启动起来,这样就会成为死循环.因此这里忽略daemonset.
+
+实际在使用kubectl drain时候,命令行一直被阻塞,等了很久还在被阻塞.使用kubectl get pod命令查看pod状态时.其中一个叫作busybox的pod一直处于Terminating状态. 使用kubectl delete pod busybox同样无法删除它.这时候可以使用命令kubectl delete pods busybox --grace-period=0 --force来强制马上删除pod.
+
+这时候控制台阻塞状态结束.下面执行命令kubectl delete node k8s-node1来删除这个节点.然后我们重新安装kubelet,kubeadm和kubectl
+
+
+卸载旧版本
+如果是通过yum方式安装的,可以通过yum list installed|grep xxx形式来找到已安装的组件,然后删除它们.删除以后重新安装.
+这里之所以要重新安装是因为版本升级成了较为新的版本,如果版本是一样的,其它的不确定因素导致节点不稳定,又找不到具体原因,则可以通过kubeadm reset来重置安装.
+重置命令并不会重置设置的iptables规则和IPVS如果想要重置iptables,则需要执行以下命令:
+iptables -F && iptables -t nat -F && iptables -t mangle -F && iptables -X
+如果想要重置IPVS,则需要执行以下命令:
+ipvsadm -C
+这里我能够基本确定是由于版本不一致导致的,因此我并不重置iptables和IPVS,仅仅是重装组件.
+
+重新加入集群
+重置完成以后,我们把删除掉的k8s-node1节点使用kubeadm join重新加入到集群中
+
+如果忘记了主节点初始化时候生成的加入token,可以在主节点上执行kubeadm token create --print-join-command重新生成加入token,然后把生成的命令复制到要加入集群的节点上执行.
+
+重新加入集群后,观察了一段时间,一直是Ready状态,感觉终于稳定了,但是同事又反馈部署服务时出现以下错误
+
+Failed create pod sandbox: rpc error: code = Unknown desc = failed to set up sandbox container "5159f7918d520aee74c5a08c8707f34b61bcf1c340bfc444125331034e1f57f6" network for pod "test-58f4789cb7-7nlk8": NetworkPlugin cni failed to set up pod "test-58f4789cb7-7nlk8_default" network: failed to set bridge addr: "cni0" already has an IP address different from 10.244.4.1/24
+幸好有伟大的互联网,通过搜索,找到以下解决方案
+
+由于这次启动以后初次部署pod就失败了,因此此节点上还没有运行的服务,我们不需要执行kubectl drain,可以直接把这个节点删除.然后执行以下命令
+
+kubeadm reset
+systemctl stop kubelet
+systemctl stop docker
+rm -rf /var/lib/cni/
+rm -rf /var/lib/kubelet/*
+rm -rf /etc/cni/
+ifconfig cni0 down
+ifconfig flannel.1 down
+ifconfig docker0 down
+ip link delete cni0
+ip link delete flannel.1
+systemctl start docker
+完了以后重新加入集群.这次可以正常工作了.
+
+
+kubernetes故障现场一之Orphaned pod
+
+问题描述:周五写字楼整体停电,周一再来的时候发现很多pod的状态都是Terminating,经排查是因为测试环境kubernetes集群中的有些节点是PC机,停电后需要手动开机才能起来.起来以后节点恢复正常,但是通过journalctl -fu kubelet查看日志不断有以下错误
+
+[root@k8s-node4 pods]# journalctl -fu kubelet
+-- Logs begin at 二 2019-05-21 08:52:08 CST. --
+5月 21 14:48:48 k8s-node4 kubelet[2493]: E0521 14:48:48.748460    2493 kubelet_volumes.go:140] Orphaned pod "d29f26dc-77bb-11e9-971b-0050568417a2" found, but volume paths are still present on disk : There were a total of 1 errors similar to this. Turn up verbosity to see them.
+我们通过cd进入/var/lib/kubelet/pods目录,使用ls查看
+
+[root@k8s-node4 pods]# ls
+36e224e2-7b73-11e9-99bc-0050568417a2  42e8cd65-76b1-11e9-971b-0050568417a2  42eaca2d-76b1-11e9-971b-0050568417a2
+36e30462-7b73-11e9-99bc-0050568417a2  42e94e29-76b1-11e9-971b-0050568417a2  d29f26dc-77bb-11e9-971b-0050568417a2
+可以看到,错误信息里的pod的ID在这里面,我们cd进入它(d29f26dc-77bb-11e9-971b-0050568417a2),可以看到里面有以下文件
+
+[root@k8s-node4 d29f26dc-77bb-11e9-971b-0050568417a2]# ls
+containers  etc-hosts  plugins  volumes
+我们查看etc-hosts文件
+
+[root@k8s-node4 d29f26dc-77bb-11e9-971b-0050568417a2]# cat etc-hosts
+Kubernetes-managed hosts file.
+127.0.0.1       localhost
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+fe00::0 ip6-mcastprefix
+fe00::1 ip6-allnodes
+fe00::2 ip6-allrouters
+10.244.7.7      sagent-b4dd8b5b9-zq649
+我们在主节点上执行kubectl get pod|grep sagent-b4dd8b5b9-zq649发现这个pod已经不存在了.
+
+问题的讨论查看这里有人在pr里提交了来解决这个问题,截至目前PR仍然是未合并状态.
+
+目前解决办法是先在问题节点上进入/var/lib/kubelet/pods目录,删除报错的pod对应的hash(rm -rf 名称),然后从集群主节点删除此节点(kubectl delete node),然后在问题节点上执行
+
+kubeadm reset
+systemctl stop kubelet
+systemctl stop docker
+systemctl start docker
+systemctl start kubelet
+执行完成以后此节点重新加入集群
+
+Orphaned pod found - but volume paths are still present on disk  孤立的 Pod
+https://github.com/kubernetes/kubernetes/issues/60987
+
+
+kubernetes之故障现场二,节点名称冲突
+
+问题描述:测试环境由于异常断电导致服务器重启一后,有一个节点的状态一直是NotReady.通过journalctl -f -u kubelet没有错误日志输出.通过tail /var/log/messages查看日志信息,发现有输出日志avahi-daemon[24276]: Host name conflict, retrying with k8s-node5-08这样的错误.经过排查这是由 于avahi的一个bug造成的.截至目前该问题已经修复,但是新的版本还没有发布.
+目前的解决办法是先把这个节点从集群中删除(kubectl delete node k8s-node5),由于apiserver现在已经无法同这个节点进行通信,因此pod驱离也无法进行,只能够先删除节点了.删除完成以后,重命名该节点的名称(hostnamectl set-hostname xxx),然后执行kubeadm reset重置该节点,然后再重新加入集群,问题算是得到解决.
+
+
+kubernetes 高级之创建只读文件系统以及只读 asp.net core 容器
+
+使用docker创建只读文件系统
+
+容器化部署对应用的运维带来了极大的方便,同时也带来一些新的安全问题需要考虑.比如黑客入侵到容器内,对容器内的系统级别或者应用级别文件进行修改,会造成难以估量的损失.(比如修改hosts文件导致dns解析异常,修改web资源导致网站被嵌入广告,后端逻辑被更改导致权限验证失效等,由于是分布式部署,哪些容器内的资源被修改也很难以发现).解决这个问题的办法就是创建创建一个具有只读文件系统的容器.下面介绍使用docker run命令和docker compose来创建具有只读文件系统的容器.
+
+使用docker run命令创建只读文件系统
+比如说要创建一个只读文件系统的redis容器,可以执行以下命令
+
+docker run --read-only redis
+docker compose/swarm创建只读文件系统
+yaml编排文件示例如下
+
+version: '3.3'
+ 
+services:
+  redis:
+    image: redis:4.0.1-alpine
+    networks:
+      - myoverlay
+    read_only: true
+
+networks:
+  myoverlay:
+
+问题:创建只读文件系统看起来很不错,但是实际上往往会有各种各样的问题,比如很多应用要写temp文件或者写日志文件,
+如果对这样的应用创建只读容器则很可能导致应用无法正常启动.对于需要往固定位置写入日志或者临时文件的应用,
+可以挂载宿主机的存储卷,虽然容器是只读的,但是挂载的盘仍然是可读写的.
+
+kubernetes 高级之 pod 安全策略
+
+什么是pod安全策略
+pod安全策略是集群级别的用于控制pod安全相关选项的一种资源.
+PodSecurityPolicy定义了一系列pod相要进行在系统中必须满足的约束条件,
+以及一些默认的约束值.它允许管理员控制以下方面内容
+
+Control Aspect	Field Names
+以特权运行容器	privileged
+使用宿主名称空间	hostPID, hostIPC
+使用宿主网络和端口	hostNetwork, hostPorts
+使用存储卷类型	volumes
+使用宿主机文件系统	allowedHostPaths
+flex存储卷白名单	allowedFlexVolumes
+分配拥有 Pod 数据卷的 FSGroup	fsGroup
+只读root文件系统	readOnlyRootFilesystem
+容器的用户id和组id	runAsUser, runAsGroup, supplementalGroups
+禁止提升到root权限	allowPrivilegeEscalation, defaultAllowPrivilegeEscalation
+Linux能力	defaultAddCapabilities, requiredDropCapabilities, allowedCapabilities
+SELinux上下文	seLinux
+允许容器加载的proc类型	allowedProcMountTypes
+The AppArmor profile used by containers	annotations
+The seccomp profile used by containers	annotations
+The sysctl profile used by containers	annotations
+
+启用pod安全策略
+
+授权策略
+
+通过RBAC授权
+
+策略顺序
+除了限制pod的创建和更新,pod安全策略还用于提供它所控制的诸多字段的默认值.当有多个策略时,pod安全策略根据以下因素来选择策略
+
+任何成功通过验证没有警告的策略将被使用
+
+如果是请求创建pod,则按通过验证的策略按字母表顺序被选用
+
+否则,如果是一个更新请求,将会返回错误.因为在更新操作过程中不允许pod变化
+
+以下示例假定你运行的集群开启了pod安全策略admission controller并且你有集群管理员权限
+
+初始设置
+我们为示例创建一个名称空间和一个serviceaccount.我们使用这个serviceaccount来模拟一个非管理员用户
+
+kubectl create namespace psp-example
+kubectl create serviceaccount -n psp-example fake-user
+kubectl create rolebinding -n psp-example fake-editor --clusterrole=edit --serviceaccount=psp-example:fake-user
+为了方便辨认我们使用的账户,我们创建两个别名
+
+alias kubectl-admin='kubectl -n psp-example'
+alias kubectl-user='kubectl --as=system:serviceaccount:psp-example:fake-user -n psp-example'
+
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: example
+spec:
+  privileged: false
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  volumes:
+  - '*'
+
+以下是推荐的最小化的允许存储卷类型的安全策略配置
+
+configMap
+downwardAPI
+emptyDir
+persistentVolumeClaim
+secret
+projected
+
+AllowedHostPaths- 它定义了一个hostPath类型的存储卷可用的宿主机路径的白名单.
+空集群意味着对宿主机的path无使用限制.它被定义为一个包含了一系列对象的单个pathPrefix字段,
+允许hostpath类型的存储卷挂载以pathPrefix字段开头的宿主机路径.
+readonly字段意味着必须以readonly方式挂载(即不能写入,只能读)
+
+通过RBAC授权
+
+策略参考
+
+特权的
+
+Host名称空间
+
+存储卷和文件系统
+
+特权提升
+
+kubernetes 高级之动态准入控制
+
+什么是准入钩子
+
+动态准入控制器文档介绍了如何使用标准的,插件式的准入控制器.但是,但是由于以下原因,插件式的准入控制器在一些场景下并不灵活:
+它们需要编译到kube-apiserver里
+它们仅在apiserver启动的时候可以配置
+准入钩子(Admission Webhooks 从1.9版本开始)解决了这些问题,它允许准入控制器独立于核心代码编译并且可以在运行时配置.
+什么是准入钩子
+
+准入钩子是一种http回调,它接收准入请求然后做一些处理.
+你可以定义两种类型的准入钩子:验证钩子和变换钩子.对于验证钩子,
+你可以拒绝请求以使自定义准入策略生效.对于变换钩子,
+你可以改变请求来使自定义的默认配置生效.
+
+
+kubernetes 高级之集群中使用 sysctls
+
+在linux系统里,sysctls 接口允许管理员在运行时修改内核参数.参数存在于/proc/sys/虚拟进程文件系统里.参数涉及到很多子模块,例如:
+
+内核(kernel)(常见前缀kernel.)
+网络(networking)(常见前缀net.)
+虚拟内存(virtual memory) (常见前缀 vm.)
+MDADM(常见前缀dev.)
+
+启用非安全sysctls
+sysctls分为安全和非安全的.除了合理地划分名称空间外一个安全的sysctl必须在同一个节点上的pod间是隔离的.这就意味着为一个pod设置安全的sysctl需要考虑以下:
+
+必须不能影响同一节点上的其它pod
+
+必须不能危害节点的健康
+
+必须不能获取自身pod所限制以外的cpu或内存资源
+
+截至目前,大部分名称空间下的sysctls都不被认为是安全的.以下列出被kubernetes安全支持:
+
+kernel.shm_rmid_forced
+
+net.ipv4.ip_local_port_range
+
+net.ipv4.tcp_syncookies
+
+如果日后kubelete支持更好的隔离机制,这份支持的安全列表将会扩展
+
+所有安全sysctls默认被开启
+
+所有的非安全sysctls默认被关闭,管理员必须手动在pod级别启动.包含非安全sysctls的pod仍然会被调度,但是将启动失败.
+
+请牢记以上警告,集群管理员可以在特殊情况下,比如为了高性能或者时实应用系统优化,可以启动相应的sysctls.sysctl可以通过kubelet在节点级别启动
+
+
+即需要在想要开启sysctl的节点上手动启动.如果要在多个节点上启动则需要分别进入相应的节点进行设置.
+
+kubelet --allowed-unsafe-sysctls \
+  'kernel.msg*,net.ipv4.route.min_pmtu' ...
+对于minikube,则可以通过extra-config来配置
+
+minikube start --extra-config="kubelet.allowed-unsafe-sysctls=kernel.msg*,net.ipv4.route.min_pmtu"...
+仅有名称空间的sysctls可以通过这种方式开启
+
+由于非安全sysctls的非安全特征,设置非安全sysctls产生的后果将由你自行承担,可能产生的后果包含pod行为异常,资源紧张或者节点完全崩溃
+
+pod安全策略(PodSecurityPolicy)
+你可以通过设置pod安全策略里的forbiddenSysctls(和)或者allowedUnsafeSysctls来
+进一步控制哪些sysctls可以被设置.一个以*结尾的sysctl,比如kernel.*匹配其下面所有的sysctl
+forbiddenSysctls和allowedUnsafeSysctls均是一系列的纯字符串sysctl名称或者sysctl模板(以*结尾).*匹配所有的sysctl
+forbiddenSysctls将排除一系列sysctl.你可以排除一系列安全和非安全的sysctls.如果想要禁止设置任何sysctls,可以使用*
+如果你在allowedUnsafeSysctls字段设置了非安全sysctls,并且没有出现在forbiddenSysctls字段里,
+则使用了此pod安全策略的pods可以使用这个(些)(sysctls).如果想启用所有的非安全sysctls,可以设置*
+警告,如果你通过pod安全策略的allowedUnsafeSysctls把非安全sysctl添加到白名单(即可以执行),
+但是如果节点级别没有通过sysctl设置--allowed-unsafe-sysctls,pod将启动失败.
+
+
+kubernetes使用http rest api访问集群之使用postman工具访问 apiserver
+
+
+
+=================================================================================================
+
+kubernetes实战篇之部署一个.net core微服务项目
+
+1.kubernetes实战篇之nexus oss服务器部署及基于nexus的docker镜像仓库搭建
+
+2.kubernetes实战篇之windows添加自签ca证书信任
+
+3.kubernetes实战篇之创建密钥自动拉取私服镜像
+
+4.kubernetes实战篇之为默认账户创建镜像拉取密钥
+
+5.kubernetes实战篇之dashboard搭建
+
+6.kubernetes实战篇之通过api-server访问dashboard
+
+7.kubernetes实战篇之Dashboard的访问权限限制
+
+8.kubernetes实战篇之创建一个只读权限的用户
+
+9.kubernetes实战篇之helm安装
+
+10.kubernetes实战篇之helm填坑与基本命令
+
+11.kubernetes实战篇之helm完整示例
+
+12.kubernetes实战篇之helm使用技巧
+
+13.kubernetes实战篇之helm示例yaml文件文件详细介绍
+
+14.kubernetes实战篇之docker镜像的打包与加载
+
+15.kubernetes实战之consul篇及consul在windows下搭建consul简单测试环境
+
+16.kubernetes实战之consul简单测试环境搭建及填坑
+
+17.kubernetes实战之部署一个接近生产环境的consul集群
+
+
+dashboard.yaml
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubernetes-dashboard
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+spec:
+  ports:
+    - port: 443
+      targetPort: 8443
+  selector:
+    k8s-app: kubernetes-dashboard
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard-certs
+  namespace: kubernetes-dashboard
+type: Opaque
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard-csrf
+  namespace: kubernetes-dashboard
+type: Opaque
+data:
+  csrf: ""
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard-key-holder
+  namespace: kubernetes-dashboard
+type: Opaque
+
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard-settings
+  namespace: kubernetes-dashboard
+
+---
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+rules:
+  # Allow Dashboard to get, update and delete Dashboard exclusive secrets.
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["kubernetes-dashboard-key-holder", "kubernetes-dashboard-certs", "kubernetes-dashboard-csrf"]
+    verbs: ["get", "update", "delete"]
+    # Allow Dashboard to get and update 'kubernetes-dashboard-settings' config map.
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["kubernetes-dashboard-settings"]
+    verbs: ["get", "update"]
+    # Allow Dashboard to get metrics.
+  - apiGroups: [""]
+    resources: ["services"]
+    resourceNames: ["heapster", "dashboard-metrics-scraper"]
+    verbs: ["proxy"]
+  - apiGroups: [""]
+    resources: ["services/proxy"]
+    resourceNames: ["heapster", "http:heapster:", "https:heapster:", "dashboard-metrics-scraper", "http:dashboard-metrics-scraper"]
+    verbs: ["get"]
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard
+rules:
+  # Allow Metrics Scraper to get metrics from the Metrics server
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list", "watch"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kubernetes-dashboard
+subjects:
+  - kind: ServiceAccount
+    name: kubernetes-dashboard
+    namespace: kubernetes-dashboard
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernetes-dashboard
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubernetes-dashboard
+subjects:
+  - kind: ServiceAccount
+    name: kubernetes-dashboard
+    namespace: kubernetes-dashboard
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: kubernetes-dashboard
+  template:
+    metadata:
+      labels:
+        k8s-app: kubernetes-dashboard
+    spec:
+      containers:
+        - name: kubernetes-dashboard
+          image: kubernetesui/dashboard:v2.0.0-beta8
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8443
+              protocol: TCP
+          args:
+            - --auto-generate-certificates
+            - --namespace=kubernetes-dashboard
+            # Uncomment the following line to manually specify Kubernetes API server Host
+            # If not specified, Dashboard will attempt to auto discover the API server and connect
+            # to it. Uncomment only if the default does not work.
+            # - --apiserver-host=http://my-address:port
+          volumeMounts:
+            - name: kubernetes-dashboard-certs
+              mountPath: /certs
+              # Create on-disk volume to store exec logs
+            - mountPath: /tmp
+              name: tmp-volume
+          livenessProbe:
+            httpGet:
+              scheme: HTTPS
+              path: /
+              port: 8443
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1001
+            runAsGroup: 2001
+      volumes:
+        - name: kubernetes-dashboard-certs
+          secret:
+            secretName: kubernetes-dashboard-certs
+        - name: tmp-volume
+          emptyDir: {}
+      serviceAccountName: kubernetes-dashboard
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      # Comment the following tolerations if Dashboard must not be deployed on master
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: dashboard-metrics-scraper
+  name: dashboard-metrics-scraper
+  namespace: kubernetes-dashboard
+spec:
+  ports:
+    - port: 8000
+      targetPort: 8000
+  selector:
+    k8s-app: dashboard-metrics-scraper
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    k8s-app: dashboard-metrics-scraper
+  name: dashboard-metrics-scraper
+  namespace: kubernetes-dashboard
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: dashboard-metrics-scraper
+  template:
+    metadata:
+      labels:
+        k8s-app: dashboard-metrics-scraper
+      annotations:
+        seccomp.security.alpha.kubernetes.io/pod: 'runtime/default'
+    spec:
+      containers:
+        - name: dashboard-metrics-scraper
+          image: kubernetesui/metrics-scraper:v1.0.1
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /
+              port: 8000
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+          volumeMounts:
+          - mountPath: /tmp
+            name: tmp-volume
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1001
+            runAsGroup: 2001
+      serviceAccountName: kubernetes-dashboard
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      # Comment the following tolerations if Dashboard must not be deployed on master
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+
+下面我们来讲解如何配置一个拥有完整权限的token.
+
+创建一个dashboard管理用户
+kubectl create serviceaccount dashboard-admin -n kube-system
+绑定用户为集群管理用户
+kubectl create clusterrolebinding dashboard-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:dashboard-admin
+执行完以上操作后,由于管理用户的名称为dashboard-admin,生成的对应的secret的值则为dashboard-admin-token-随机字符串我的机器上完整名称为dashboard-admin-token-sg6bp
+
+[centos@k8s-master dashboard]$ kubectl get secret -n=kube-system |grep dashboard-admin-token
+dashboard-admin-token-sg6bp                      kubernetes.io/service-account-token   3      23h
+[centos@k8s-master dashboard]$
+可以看到这个secret的完整名称,或者不使用grep管道,列出所有的secrets,然后从中寻找需要的.
+
+通过上面介绍过的kubectl describe secret命令查看token
+
+[centos@k8s-master dashboard]$ kubectl describe -n=kube-system  secret dashboard-admin-token-sg6bp
+Name:         dashboard-admin-token-sg6bp
+Namespace:    kube-system
+Labels:       <none>
+Annotations:  kubernetes.io/service-account.name: dashboard-admin
+              kubernetes.io/service-account.uid: c60d2a65-619e-11e9-a627-0050568417a2
+
+Type:  kubernetes.io/service-account-token
+
+Data
+====
+ca.crt:     1025 bytes
+namespace:  11 bytes
+token:      eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJkYXNoYm9hcmQtYWRtaW4tdG9rZW4tc2c2YnAiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGFzaGJvYXJkLWFkbWluIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiYzYwZDJhNjUtNjE5ZS0xMWU5LWE2MjctMDA1MDU2ODQxN2EyIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50Omt1YmUtc3lzdGVtOmRhc2hib2FyZC1hZG1pbiJ9.Ai8UqLHNbwVFf4QRq1p0JdVVy-KuguSTrsJRYmh-TEArH-Bkp0yBWNPpsP8fKL8MRMwlZEyJml-GZEoWvEbInvrgLHtMgA0A6Xbq89fvXqnLQBWsjEnrdIBSHmksLk4v_ldvVrnr6XXK8LGB34TVWxeYvSfv8aF35hXAV_r5-p18t7m9GFxU0_z1Gq1Af9GMA4wotERaWd1hHqNIcrDF8UpgUw2952nIu_VxGSV6eCagPxlpjbyAPrcEjSBK7O7QACtKXnG0bW8MqNaNYiLksYpvtJS7f0GlTeTpDZoj--5gJqAcNanCy7eQU8LuF-fiUaZIfXe0ZaWH0M1mjcAskA
+[centos@k8s-master dashboard]$
+我们把以上token复制到登陆页面的token栏里,就可以登陆了.登陆以后就可以看到如上面最后展示的有完整信息的界面.
+
+
+
+kubernetes 实战篇之 helm
+
+1. 先在 K8S 集群上每个节点安装 socat 软件
+
+YUM 安装（每个节点都要安装）
+yum install -y socat 
+
+2. 下载 helm release
+
+https://github.com/helm/helm/releases/
+
+注意下载的时候选择下载的是Installation and Upgrading下面的包,而不是下面assets里面的内容
+
+
+
+
+kubernetes 实战之 consul
+
+
+kubernetes dashboard 部署以及访问
+
+参考链接 https://blog.csdn.net/networken/article/details/85607593
+
+有以下几种方式访问dashboard：
+
+Nodport 方式访问 dashboard，service 类型改为 NodePort
+loadbalacer 方式，service 类型改为 loadbalacer
+Ingress 方式访问 dashboard
+API server 方式访问 dashboard
+kubectl proxy 方式访问 dashboard
+
+这是因为最新版的k8s默认启用了RBAC，并为未认证用户赋予了一个默认的身份：anonymous。
+对于API Server来说，它是使用证书进行认证的，我们需要先创建一个证书：
+我们使用client-certificate-data和client-key-data生成一个p12文件，可使用下列命令：
+
+
+# 生成client-certificate-data
+grep 'client-certificate-data' ~/.kube/config | head -n 1 | awk '{print $2}' | base64 -d >> kubecfg.crt
+# 生成client-key-data
+grep 'client-key-data' ~/.kube/config | head -n 1 | awk '{print $2}' | base64 -d >> kubecfg.key
+# 生成p12
+openssl pkcs12 -export -clcerts -inkey kubecfg.key -in kubecfg.crt -out kubecfg.p12 -name "kubernetes-client"

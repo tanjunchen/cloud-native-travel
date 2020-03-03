@@ -1,6 +1,22 @@
 # Ubuntu 18.04 常见操作
 1. 设置静态 IP
     参考链接[设置静态IP](https://www.cnblogs.com/jianxuanbing/p/10042892.html)、[设置静态IP](https://blog.csdn.net/qq_19004627/article/details/90409420)
+
+network:
+    ethernets:
+        ens33:
+            addresses:
+            - 192.168.4.254/24
+            dhcp4: false
+            gateway4: 192.168.4.2
+            nameservers:
+                addresses:
+                - 8.8.8.8
+                search: []
+    version: 2
+
+sudo netplan apply
+
 2. SSH 与 SCP
     ssh ip   # ssh命令接IP地址，之后会提示你输入用户名称和密码
     ssh username@ip  # username为登录时的用户名，之后只需要输入密码就能进行登录
