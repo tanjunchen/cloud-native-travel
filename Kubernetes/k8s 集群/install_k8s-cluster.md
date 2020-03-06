@@ -124,11 +124,6 @@ sudo systemctl enable kubelet && sudo systemctl start kubelet
 
 sudo kubeadm init --image-repository registry.aliyuncs.com/google_containers --kubernetes-version v1.16.3  --pod-network-cidr=10.244.0.0/16
 
-===========================================================================================================================================================================================
-
-sss
-sudo kubeadm init --image-repository registry.aliyuncs.com/google_containers --pod-network-cidr=10.244.0.0/16
-
 kubectl run --generator=run-pod/v1 -i --tty load-generator --image=busybox /bin/sh
 
 kubectl 是管理 Kubernetes Cluster 的命令行工具，前面我们已经在所有的节点安装了 kubectl。Master 初始化完成后需要做一些配置工作，然后 kubectl 就能使用了。
@@ -226,8 +221,6 @@ openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outfor
 # master地址，token，hash请自行更换
 kubeadm join 192.168.232.204:6443 --token m87q91.gbcqhfx9ansvaf3o --discovery-token-ca-cert-hash sha256:fdd34ef6c801e382f3fb5b87bc9912a120bf82029893db121b9c8eae29e91c62
 
-sudo kubeadm  init --image-repository=registry.aliyuncs.com/google_containers --kubernetes-version=v1.16.3 --pod-network-cidr=192.168.0.0/16
-
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
@@ -258,7 +251,7 @@ Pod
 
 CentOS:
 
-vim /etc/sysconfig/network-scripts/ifcfg-ens33
+sudo vim /etc/sysconfig/network-scripts/ifcfg-ens33
 
 IPADDR=192.168.17.132
 GATEWAY=192.168.17.2
@@ -282,15 +275,13 @@ yum makecache
 
 docker
 sudo yum remove docker \
-                  docker-client \
-                  docker-client-latest \
-                  docker-common \
-                  docker-latest \
-                  docker-latest-logrotate \
-                  docker-logrotate \
-                  docker-engine
-
-
+docker-client \
+docker-client-latest \
+docker-common \
+docker-latest \
+docker-latest-logrotate \
+docker-logrotate \
+docker-engine
 
 sudo yum install -y vim wget epel-release
 
@@ -305,6 +296,7 @@ sudo yum install -y docker-ce docker-ce-cli containerd.io
 yum list docker-ce --showduplicates | sort -r
 
 sudo yum install -y docker-ce-<VERSION_STRING> docker-ce-cli-<VERSION_STRING> containerd.io
+
 例如：
 yum install -y docker-ce-19.03.5-3.el7 docker-ce-cli-19.03.5-3.el7 containerd.io
 sudo yum -y install docker-ce-18.09.0 docker-ce-cli-18.09.0
@@ -312,7 +304,6 @@ sudo yum -y install docker-ce-18.09.0 docker-ce-cli-18.09.0
 sudo systemctl start docker
 
 sudo docker run hello-world
-
 
 
 kubernetes:
@@ -3660,3 +3651,15 @@ grep 'client-certificate-data' ~/.kube/config | head -n 1 | awk '{print $2}' | b
 grep 'client-key-data' ~/.kube/config | head -n 1 | awk '{print $2}' | base64 -d >> kubecfg.key
 # 生成p12
 openssl pkcs12 -export -clcerts -inkey kubecfg.key -in kubecfg.crt -out kubecfg.p12 -name "kubernetes-client"
+
+
+# 疑问解答
+
+centos
+
+[WARNING Firewalld]: firewalld is active, please ensure ports [6443 10250] are open or your cluster may not function correctly
+
+sudo firewall-cmd --permanent --add-port=6443/tcp && sudo firewall-cmd --permanent --add-port=10250/tcp && sudo firewall-cmd --reload
+
+[WARNING SystemVerification]: this Docker version is not on the list of validated versions: 19.03.5. Latest validated version: 18.09
+
