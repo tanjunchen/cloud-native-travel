@@ -93,7 +93,7 @@ set cul
 
 软件源分为 ubuntu 官方软件源、PPA(Personal Package Archives) 软件源。
 
-launchpad.net 提供了 PPA，允许开发者建立自己的软件仓库，自由的上传软件。
+launchpad.net 提供了 PPA，允许开发者建立自己的软件仓库，自由地上传软件。
 
 添加 PPA 软件源的命令：sudo add-apt-repository ppa:user/ppa-name
 
@@ -421,41 +421,31 @@ sudo systemctl start docker
 参考 [安装 pycharm](https://blog.csdn.net/qq_15192373/article/details/81091278)、[安装 Pycharm](https://ywnz.com/linuxjc/3160.html)
 
 1. 终端进入此路径：
-
 cd /usr/share/applications
-
 1. 执行命令：
-
 sudo touch pycharm.desktop
-
 1. 执行命令：
-
 sudo vim pycharm.desktop
-
 1. 复制下面代码到 pycharm.desktop 文件中，注意修改其中标记的两项的路径
-
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=PyCharm
-Icon=/opt/pycharm-2018.2.4/bin/pycharm.png    #注意此处的路径
-Exec="/opt/pycharm-2018.2.4/bin/pycharm.sh" %f   #注意此处的路径
-Comment=The Drive to Develop
-Categories=Development;IDE;
-Terminal=false Startup
-WMClass=jetbrains-pycharm
+    
+    [Desktop Entry]
+    Version=1.0
+    Type=Application
+    Name=PyCharm
+    Icon=/opt/pycharm-2018.2.4/bin/pycharm.png    #注意此处的路径
+    Exec="/opt/pycharm-2018.2.4/bin/pycharm.sh" %f   #注意此处的路径
+    Comment=The Drive to Develop
+    Categories=Development;IDE;
+    Terminal=false Startup
+    WMClass=jetbrains-pycharm
 
 1. 编辑完毕，保存并退出后，修改文件权限：
-
 sudo chmod u+x pycharm.deskto
-
 1. 在系统搜索处输入 pycharm，双击启动即可
-
 后记：如果不记得安装路径了，可以尝试到下面地方找：
 
-Exec=/home/fungtion(用户名)/Downloads/pycharm-2018.1.2/bin/pycharm.sh
-
-Icon=/home/fungtion(用户名)/Downloads/pycharm-2018.1.2/bin/pycharm.png
+    Exec=/home/fungtion(用户名)/Downloads/pycharm-2018.1.2/bin/pycharm.sh
+    Icon=/home/fungtion(用户名)/Downloads/pycharm-2018.1.2/bin/pycharm.png
 
 ### 安装 vscode
 
