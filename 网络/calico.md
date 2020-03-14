@@ -40,11 +40,13 @@ vxlan(virtual Extensible LAN)虚拟可扩展局域网，是一种overlay的网�
 IPIP 是一种将各 Node 的路由之间做一个 tunnel，再把两个网络连接起来的模式，启用 IPIP 模式时，Calico 将在各 Node 上创建一个名为 "tunl0" 的虚拟网络接口。
 
 centos 7:
+
 uname -a
 
 Linux node01 3.10.0-1062.4.3.el7.x86_64 #1 SMP Wed Nov 13 23:58:53 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
 
 node01 node02
+
 sudo yum install NetworkManager
 
 sudo systemctl start NetworkManager.service
@@ -54,6 +56,7 @@ sudo systemctl enable NetworkManager.service
 
 
 编辑文件，添加一下内容
+
 /etc/NetworkManager/conf.d/calico.conf
 
 [keyfile]
@@ -74,6 +77,7 @@ node:
 
 
 --cluster-cidr=<your-pod-cidr> and --allocate-node-cidrs=true
+
 On kubeadm, you can pass --pod-network-cidr=<your-pod-cidr> to kubeadm to set both Kubernetes controller flags 
 
 curl https://docs.projectcalico.org/v3.11/manifests/canal.yaml -O
@@ -85,7 +89,9 @@ kubectl get --namespace=kube-system pod -o wide|grep canal
 calicoctl get ippool default-ipv4-pool -o yaml
 
 sudo yum list telnet*              列出telnet相关的安装包
+
 sudo yum install telnet-server -y          安装telnet服务
+
 sudo yum install telnet.* -y        安装telnet客户端
 
 
@@ -94,7 +100,9 @@ sudo yum install telnet.* -y        安装telnet客户端
 wget -O /usr/local/bin/calicoctl https://github.com/projectcalico/calicoctl/releases/download/v3.11.1/calicoctl
 
 现在只安装到主节点：
+
 scp -r ./calicoctl node01@192.168.1.131:/home/node01/ 
+
 scp -r ./calicoctl node02@192.168.1.132:/home/node02/
 
 sudo chmod +x /usr/local/bin/calicoctl
@@ -104,7 +112,7 @@ sudo chmod +x /usr/local/bin/calicoctl
 stat $HOME/.kube/config: no such file or directory
 
 
-
+```
 calicoctl get nodes
 ifconfig
 kubectl get node
@@ -116,15 +124,12 @@ brctl -h
 brctl show virbr0
 kubectl get pod
 kubectl get pod --all-namespaces
-docker images | grep nginx
 kubectl run nginx --image registry.cn-beijing.aliyuncs.com/mrvolleyball/nginx
 kubectl run nginx --image registry.cn-beijing.aliyuncs.com/mrvolleyball/nginx:v1 --replicas 3
 kubectl get deployment
 kubectl delete deployment nginx
 kubectl run nginx --image registry.cn-beijing.aliyuncs.com/mrvolleyball/nginx:v1 --replicas 3
 kubectl get pod -o wide
-ping 10.244.2.4
-ping 10.244.1.3
 sudo -s iptables -t nat -L -n
 ip r
 kubectl get pod -n kube-system
@@ -133,4 +138,4 @@ kubectl -n kube-system logs -f canal-2r44f
 kubectl -n kube-system logs -f canal-2r44f -c kube-flannel
 ip a
 sudo -s ip l s dev flannel.1 up
-
+```
