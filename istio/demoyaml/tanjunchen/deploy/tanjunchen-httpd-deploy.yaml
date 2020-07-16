@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpd
+  namespace: tanjunchen
+  labels:
+    server: httpd
+    app: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      server: httpd
+      app: web
+  template:
+    metadata:
+      labels:
+        server: httpd
+        app: web
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ['/bin/sh', '-c', "echo 'hello httpd' > /var/www/index.html; httpd -f -p 8080 -h /var/www"]

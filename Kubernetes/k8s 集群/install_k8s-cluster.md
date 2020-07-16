@@ -122,8 +122,6 @@ sudo apt install -y kubelet=1.16.3-00 kubeadm=1.16.3-00 kubectl=1.16.3-00
 
 sudo systemctl enable kubelet && sudo systemctl start kubelet
 
-sudo kubeadm init --image-repository registry.aliyuncs.com/google_containers --kubernetes-version v1.16.3  --pod-network-cidr=10.244.0.0/16
-
 kubeadm init --image-repository registry.aliyuncs.com/google_containers   --pod-network-cidr=172.20.0.0/16  --service-cidr=10.32.0.0/24 --kubernetes-version v1.17.0
 
 
@@ -333,11 +331,7 @@ kubeadm init --kubernetes-version=1.16.3 \
 --service-cidr=10.1.0.0/16 \
 --pod-network-cidr=10.244.0.0/16
 
-sudo kubeadm init --image-repository registry.aliyuncs.com/google_containers --kubernetes-version=1.16.3   --pod-network-cidr=10.24.0.0/16 --service-cidr=10.1.0.0/16
-
-kubeadm init --image-repository registry.aliyuncs.com/google_containers --kubernetes-version=1.16.3   --pod-network-cidr=10.3.0.0/16
-
-CALICO_IPV4POOL_CIDR
+sudo kubeadm init --kubernetes-version=1.16.3 --image-repository registry.aliyuncs.com/google_containers  --pod-network-cidr=10.244.0.0/16 --service-cidr=10.1.0.0/16
 
 –kubernetes-version: 用于指定k8s版本；
 –apiserver-advertise-address：用于指定kube-apiserver监听的ip地址,就是 master本机IP地址。

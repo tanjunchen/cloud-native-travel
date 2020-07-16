@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tomcat-svc
+  namespace: tanjunchen
+  labels:
+    server: tomcat
+spec:
+  selector:
+    server: tomcat
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpd-svc
+  namespace: tanjunchen
+  labels:
+    server: httpd
+spec:
+  selector:
+    server: httpd
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc
+  namespace: tanjunchen
+  labels:
+    app: web
+spec:
+  selector:
+    app: web
+  ports:
+  - name: web-svc
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
