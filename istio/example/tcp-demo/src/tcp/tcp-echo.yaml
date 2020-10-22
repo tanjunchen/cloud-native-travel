@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tcp-echo
+  labels:
+    app: tcp-echo
+spec:
+  ports:
+    - name: tcp
+      port: 9000
+    - name: tcp-other
+      port: 9001
+  selector:
+    app: tcp-echo
+
+
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-echo-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tcp-echo
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: tcp-echo
+        version: v1
+    spec:
+      containers:
+        - name: tcp-example
+          image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/tcp:v1.0
+          imagePullPolicy: IfNotPresent
+          args: [ "9000,9001", "istio-version-v1" ]
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-echo-v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tcp-echo
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: tcp-echo
+        version: v2
+    spec:
+      containers:
+        - name: tcp-example
+          image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/tcp:v1.0
+          imagePullPolicy: IfNotPresent
+          args: [ "9000,9001", "istio-version-v2"]
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
