@@ -124,7 +124,6 @@ sudo systemctl enable kubelet && sudo systemctl start kubelet
 
 kubeadm init --image-repository registry.aliyuncs.com/google_containers   --pod-network-cidr=172.20.0.0/16  --service-cidr=10.32.0.0/24 --kubernetes-version v1.17.0
 
-
 kubectl run --generator=run-pod/v1 -i --tty load-generator --image=busybox /bin/sh
 
 kubectl 是管理 Kubernetes Cluster 的命令行工具，前面我们已经在所有的节点安装了 kubectl。Master 初始化完成后需要做一些配置工作，然后 kubectl 就能使用了。
@@ -330,6 +329,12 @@ kubeadm init --kubernetes-version=1.16.3 \
 --image-repository registry.aliyuncs.com/google_containers \
 --service-cidr=10.1.0.0/16 \
 --pod-network-cidr=10.244.0.0/16
+
+
+kubeadm init --kubernetes-version=1.14.0 --image-repository registry.aliyuncs.com/google_containers
+
+kubeadm init --kubernetes-version=1.17.0 --image-repository registry.aliyuncs.com/google_containers  --pod-network-cidr=10.244.0.0/16 --service-cidr=10.30.0.0/16
+
 
 sudo kubeadm init --kubernetes-version=1.16.3 --image-repository registry.aliyuncs.com/google_containers  --pod-network-cidr=10.244.0.0/16 --service-cidr=10.1.0.0/16
 
