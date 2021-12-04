@@ -1,4 +1,9 @@
-# top
+## linux 常见命令
+
+
+
+## 常见命令说明
+### top
 
 Tasks: 324 total,   1 running, 255 sleeping,   0 stopped,   1 zombie
 
@@ -101,91 +106,121 @@ KiB Swap:  2097148 total,  1383984 free,   713164 used.  2583004 avail Mem
    132 root       0 -20       0      0      0 I  0.0  0.0   0:00.00 kthrotld
 ```
 
-# ps
+### ps
 
-# pstree
+ps aux 
+ps ef
 
-# free
+ps 的参数非常多, 在此仅列出几个常用的参数并大略介绍含义
+-A 列出所有的进程
+-w 显示加宽可以显示较多的资讯
+-au 显示较详细的资讯
+-aux 显示所有包含其他使用者的行程
+au(x) 输出格式 :
 
-# cat
+USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
 
-# tail
+### pstree
 
-# head
+以最简单的形式调用时没有任何选项或参数，pstree 命令将显示所有正在运行的进程的分层树结构。
 
-# more
+### free
 
-# less
+free 命令显示系统使用和空闲的内存情况，包括物理内存、交互区内存(swap)和内核缓冲区内存。
 
-# grep
+free -b -m -g
 
-# awk
+### cat
+
+linux 中 cat 是 concatenate 的缩写，此令用以将文件、标准输入内容打印至标准输出，
+常用来显示文件内容，或者将几个文件连接起来显示，或者从标准输入读取内容并显示，它常与重定向符号配合使用。
+
+### tail
+
+tail -f xxx.log
+
+
+### head
+
+head -n 5 xxx.log
+
+### more
+
+Linux more 命令类似 cat ，不过会以一页一页的形式显示，更方便使用者逐页阅读，
+而最基本的指令就是按空白键（space）就往下一页显示，按 b 键就会往回（back）一页显示，
+而且还有搜寻字串的功能（与 vi 相似），使用中的说明文件，请按 h 。
+
+more [-dlfpcsu] [-num] [+/pattern] [+linenum] [fileNames..]
+
+### less
+
+less 与 more 类似，less 可以随意浏览文件，支持翻页和搜索，支持向上翻页和向下翻页。
+
+### grep
+
+### awk
 
 行级文件分析工具
 
-# sort
+### sort
 
-# uniq
+### uniq
 
-# parallel
+### parallel
 
-# scp
+### scp
 
-# du
+### du
 
 查看文件或目录所占用的磁盘空间的大小
 
-# df
+### df
 
 查看磁盘使用情况
 
-# iostat
+### iostat
 
-# iotop
+### iotop
 
-# find
+### find
 
 文件搜索
 
-# locate
+### locate
 
 查找文件
 
-# tree
+### tree
 
-# ping
+### ping
 
-# nc netcat
+### nc netcat
 
-# route
+### route
 
-# netstat
+### netstat
 
-# iptables
+### iptables
 
-# tcpdump
+### tcpdump
 
+### traceroute
 
+### iftop
 
-# traceroute
+### lsof
 
-# iftop
+### dig
 
-# lsof
+### curl
 
-# dig
+### wget
 
-# curl
+### yum|apt|brew install
 
-# wget
+### man
 
-
-
-# yum|apt|brew install
-
-# man
-
-# tar
+### tar
 
 解压缩文件
 
@@ -201,25 +236,23 @@ KiB Swap:  2097148 total,  1383984 free,   713164 used.  2583004 avail Mem
 
 tar -zcvf *.tar.gz d/f
 
-# vim
+### vim
 
-# dd
+### dd
 
 复制文件并对原文件的内容进行转换和格式化处理
 
-# fdisk
+### fdisk
 
 磁盘分区工具
 
-# link ln
+### link ln
 
 创建连接
 
-
-
 Linux 命令
 
-# 文件管理
+## 文件管理
 
 cat
 
@@ -325,7 +358,7 @@ read
 
 updatedb
 
-# 文档编辑
+## 文档编辑
 
 col
 
@@ -381,7 +414,7 @@ wc
 	
 let	 
 
-# 文件传输
+## 文件传输
 
 lprm	
 
@@ -412,8 +445,8 @@ ftpshut
 ftpwho
 
 ftpcount
- 
-# 磁盘管理
+
+## 磁盘管理
 
 cd
 	
@@ -472,8 +505,8 @@ lndir
 repquota
 
 quotaon	 
-	 	 
-# 磁盘维护
+
+## 磁盘维护
 
 badblocks	
 
@@ -536,8 +569,8 @@ mkfs
 sfdisk	
 
 swapoff	
- 
-# 网络通讯
+
+## 网络通讯
 
 apachectl	
 
@@ -619,7 +652,7 @@ smbclient
 
 shapecfg
 
-# 系统管理
+## 系统管理
 
 adduser
 
@@ -725,7 +758,7 @@ groupadd
 	
 free
 
-# 系统设置
+## 系统设置
 
 reset
 	
@@ -829,7 +862,7 @@ SVGATextMode
 
 gpasswd	 
 
-# 备份压缩
+## 备份压缩
 
 ar
 
@@ -868,8 +901,8 @@ unzip
 zip	
 
 zipinfo	
- 
-# 设备管理
+
+## 设备管理
 
 setleds	
 
@@ -880,5 +913,3 @@ rdev
 dumpkeys
 
 MAKEDEV	 
-
-https://www.runoob.com/linux/linux-command-manual.html
