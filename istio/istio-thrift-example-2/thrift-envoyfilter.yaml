@@ -1,0 +1,44 @@
+# https://istio.io/latest/docs/reference/config/networking/envoy-filter/
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: thrift-demo
+spec:
+  configPatches:
+    - applyTo: NETWORK_FILTER
+      match:
+        # will match outbound listeners in all sidecars
+        context: SIDECAR_OUTBOUND
+        listener:
+          # The port dedicated to thirft
+          portNumber: 10005
+          filterChain:
+            filter:
+              name: envoy.tcp_proxy
+      patch:
+        # Remove envoy.tcp_proxy filter
+        operation: REMOVE
+    - applyTo: NETWORK_FILTER
+      match:
+        # will match outbound listeners in all sidecars
+        context: SIDECAR_OUTBOUND
+        listener:
+          # The port dedicated to thirft
+          portNumber: 10005
+      patch:
+        operation: INSERT_FIRST
+        value:
+          name: envoy.filters.network.thrift_proxy
+          config:
+            stat_prefix: "outbound|10005||thrift-demo-server.thrift-demo.svc.cluster.local"
+            transport: AUTO_TRANSPORT
+            protocol: AUTO_PROTOCOL
+            thrift_filters:
+              - name: envoy.filters.thrift.router
+            route_config:
+              routes:
+                - match:
+                    # empty string matches any request method name
+                    method_name: ""
+                  route:
+                    cluster: "outbound|10005||thrift-demo-server.thrift-demo.svc.cluster.local"

@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: thrift-demo-server
+  name: thrift-demo-server
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: thrift-demo-server
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: thrift-demo-server
+    spec:
+      containers:
+      - image: tanjunchen/thrift-example:v1.0
+        args:
+        - -server=true
+        - -addr=0.0.0.0:9090
+        imagePullPolicy: Always
+        name: demo
+        resources: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: thrift-demo-server
+  name: thrift-demo-server
+spec:
+  ports:
+  - port: 10005
+    protocol: TCP
+    targetPort: 9090
+    # See https://istio.io/latest/docs/ops/configuration/traffic-management/protocol-selection/
+    # Setting protocol to tcp, so istio will place envoy.tcp_proxy at the end of the filter chain.
+    name: tcp
+  selector:
+    app: thrift-demo-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: thrift-demo-client
+  name: thrift-demo-client
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: thrift-demo-client
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: thrift-demo-client
+      annotations:
+        # Override default stats inclusion prefixes to enable thrift stats.
+        sidecar.istio.io/statsInclusionPrefixes: reporter=,component,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grpc,ssl_context_update_by_sds,thrift
+    spec:
+      containers:
+      - image: tanjunchen/thrift-example:v1.0
+        args:
+        - -server=true
+        - -addr=0.0.0.0:9090
+        imagePullPolicy: Always
+        name: demo
+        resources: {}
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    istio-injection: enabled
+  name: thrift-demo
+---
