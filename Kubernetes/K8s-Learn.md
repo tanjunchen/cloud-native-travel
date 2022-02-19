@@ -286,8 +286,6 @@ kubeadm join 的工作流程
 回忆一下我在前面文章中分享的 Kubernetes 架构，你能够说出 Kubernetes 各个功能组件之间（包含 Etcd），
 都有哪些建立连接或者调用的方式吗？（比如：HTTP/HTTPS，远程调用等等）
 
-
-
 # 容器编排与 Kubernetes 作业管理
 
 ## 为什么需要 Pod

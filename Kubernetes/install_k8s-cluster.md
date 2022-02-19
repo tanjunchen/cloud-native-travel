@@ -247,8 +247,6 @@ kubectl get nodes -o wide
 
 Pod
 
-
-
 CentOS:
 
 sudo vim /etc/sysconfig/network-scripts/ifcfg-ens33

@@ -1,3 +1,5 @@
+# Kubernetes 源码分析
+
 api 输出接口文档用，基本是 json 源码
     api-rules 
     openapi-spec
@@ -74,10 +76,6 @@ test 测试代码
 third_party 第三方代码，protobuf、golang-reflect 等
 translations 不同国家的语言包，使用poedit查看及编辑
 vendor 第三方包
-
-# k8s-controller 源码阅读笔记
-
-
 
 # k8s-scheduler 源码阅读笔记
 
@@ -163,8 +161,3 @@ spec:
     name: kubeconfig
 status: {}
 ```
-
-
-
-see 
-https://www.qikqiak.com/post/custom-kube-scheduler/
