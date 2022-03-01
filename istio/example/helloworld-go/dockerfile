@@ -1,0 +1,14 @@
+FROM golang:1.16-alpine3.14 AS build-env
+ADD . /src
+ENV GOPROXY https://goproxy.cn
+RUN cd /src && CGO_ENABLED=0  go build -o goapp
+
+FROM alpine
+
+ARG service_version
+ENV SERVICE_VERSION ${service_version:-v1}
+
+WORKDIR /app
+COPY --from=build-env /src/goapp /app/
+
+ENTRYPOINT ["./goapp"]
