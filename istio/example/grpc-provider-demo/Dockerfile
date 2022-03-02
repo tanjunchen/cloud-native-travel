@@ -1,0 +1,10 @@
+FROM docker.io/library/golang:1.16-alpine3.14 AS build-env
+ADD . /src
+ENV GOPROXY https://goproxy.cn
+RUN cd /src && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o goapp
+
+FROM alpine
+WORKDIR /app
+COPY --from=build-env /src/goapp /app/
+EXPOSE 10001
+ENTRYPOINT ["./goapp"]
