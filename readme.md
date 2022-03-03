@@ -12,11 +12,11 @@
 
 [Kubernetes ckad 考试 Demo](Kubernetes/ckad/ckad.md)
 
-[物理机器搭建 Kubernetes 集群](Kubernetes/install_k8s-cluster.md)
+[物理机器搭建 Kubernetes 集群](Kubernetes/install-k8s-cluster.md)
 
 ## 存储
 
-[搭建 GlusterFS 集群](存储/GlusterFS+Heketi+MongoDB.md)
+[搭建 GlusterFS 集群](storage/GlusterFS+Heketi+MongoDB.md)
 
 ## 网络
 
@@ -26,9 +26,9 @@
 
 [istio 使用 thrift 协议案例](istio/istio-thrift-example/README.md)
 
-[使用 wasm c++ filter 拓展 envoy](istio/使用wasm拓展envoy/readme.md)
+[使用 wasm c++ filter 拓展 envoy](istio/wasm-extend-envoy/readme.md)
 
-[Istio 服务网格如何处理安全问题](istio/security/Istio服务网格如何处理安全问题.md)
+[Istio 服务网格如何处理安全问题](istio/security/istio-security.md)
 
 [istio 集群服务与 VM (虚拟机)服务进行 Mesh 通信](istio/vm/istio-cluster-vm-example.md)
 
