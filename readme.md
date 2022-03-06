@@ -34,6 +34,16 @@
 
 [istio TCP 测试用例](istio/example/tcp-demo/src/java/readme.md)
 
+[istio 测试案例 demo](istio/example/readme.md)
+
 ## ebpf
 
 待补充
+
+## istio 国产化适配
+
+istio 适配 arm、ppc 等架构，可参考 https://github.com/querycap/istio。
+
+## 常见使用工具
+
+记录了常见的使用命令与工具，可参见 [tools命令工具](tools/remote_unused_repo/readme.md)
