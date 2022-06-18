@@ -41,8 +41,6 @@ WebGo
 # Editor-based Rest Client
 .idea/httpRequests
 
-/interview
-
 # IntelliJ
 out/
 
@@ -71,4 +69,5 @@ atlassian-ide-plugin.xml
 *.out
 
 .DS_Store
+
 
