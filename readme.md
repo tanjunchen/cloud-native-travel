@@ -40,7 +40,7 @@ istio 适配 arm、ppc 等架构，可参考 https://github.com/querycap/istio�
 
 ## 算法
 
-算法与设计，可参考 [算法题](LeetCode-Offer/readme.md)
+算法与设计，可参考 [算法题](interview/readme.md)
 
 ## 为什么系列？
 
