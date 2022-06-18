@@ -12,15 +12,9 @@
 
 [Kubernetes ckad 考试 Demo](Kubernetes/ckad/ckad.md)
 
-[物理机器搭建 Kubernetes 集群](Kubernetes/install-k8s-cluster.md)
-
 ## 存储
 
-[搭建 GlusterFS 集群](storage/GlusterFS+Heketi+MongoDB.md)
-
 ## 网络
-
-待补充
 
 ## istio 服务网格
 
@@ -43,6 +37,10 @@
 ## istio 国产化适配
 
 istio 适配 arm、ppc 等架构，可参考 https://github.com/querycap/istio。
+
+## 算法
+
+算法与设计，可参考 [算法题](LeetCode-Offer/readme.md)
 
 ## 常见使用工具
 
