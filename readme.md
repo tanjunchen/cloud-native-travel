@@ -46,4 +46,4 @@ istio 适配 arm、ppc 等架构，可参考 https://github.com/querycap/istio�
 
 ## 常见使用工具
 
-记录了常见的使用命令与工具，可参见 [tools命令工具](tools/remote_unused_repo/readme.md)
+记录了常见的使用命令与工具，可参见 [tools命令工具](tools/readme.md)
