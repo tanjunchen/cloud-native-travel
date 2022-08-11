@@ -32,7 +32,7 @@
 
 ## ebpf
 
-待补充
+可参考 [ebpf](ebpf)
 
 ## istio 国产化适配
 
