@@ -6,37 +6,27 @@
 
 ![1](image/weixin.jpg)
 
+可参考 [微信](weixin/readme.md)
+
 ## kubernetes
 
-[极客时间张磊 Kubernetes 课程学习笔记](Kubernetes/K8s-Learn.md)
-
-[Kubernetes ckad 考试 Demo](Kubernetes/ckad/ckad.md)
+可参考 [kubernetes](kubernetes/readme.md)
 
 ## 存储
 
+可参考 [存储](storage/readme.md)
+
 ## 网络
+
+可参考 [网络](networking/readme.md)
 
 ## istio 服务网格
 
-[istio 使用 thrift 协议案例](istio/istio-thrift-example/README.md)
-
-[使用 wasm c++ filter 拓展 envoy](istio/wasm-extend-envoy/readme.md)
-
-[Istio 服务网格如何处理安全问题](istio/security/istio-security.md)
-
-[istio 集群服务与 VM (虚拟机)服务进行 Mesh 通信](istio/vm/istio-cluster-vm-example.md)
-
-[istio TCP 测试用例](istio/example/tcp-demo/src/java/readme.md)
-
-[istio 测试案例 demo](istio/example/readme.md)
+可参考 [istio](istio/readme.md)
 
 ## ebpf
 
-可参考 [ebpf](ebpf)
-
-## istio 国产化适配
-
-istio 适配 arm、ppc 等架构，可参考 https://github.com/querycap/istio。
+可参考 [ebpf](ebpf/readme.md)
 
 ## 算法
 
@@ -44,7 +34,15 @@ istio 适配 arm、ppc 等架构，可参考 https://github.com/querycap/istio�
 
 ## 为什么系列？
 
+可参考 [为什么系列](why/readme.md)
 
+## linux
+
+可参考 [linux](linux/readme.md)
+
+## 面试
+
+可参考 [面试](interview/readme.md)
 
 ## 常见使用工具
 
