@@ -1,8 +1,7 @@
 ## linux 常见命令
 
-
-
 ## 常见命令说明
+
 ### top
 
 Tasks: 324 total,   1 running, 255 sleeping,   0 stopped,   1 zombie
