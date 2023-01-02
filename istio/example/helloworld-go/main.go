@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -12,13 +13,13 @@ import (
 var (
 	port      string
 	version   string
-	headerNum int
+	headerNum string
 )
 
 func init() {
-	port = getEnvDefault("port", "8000")
+	port = getEnvDefault("PORT", "5000")
 	version = getEnvDefault("SERVICE_VERSION", "v1")
-	headerNum = *flag.Int("HEADER_NUM", 90, "")
+	headerNum = getEnvDefault("HEADER_NUM", "90")
 }
 
 func getEnvDefault(key, defVal string) string {
@@ -52,6 +53,7 @@ func value() string {
 	}
 	res := fmt.Sprintf("Hello version: %s, instance: %s\n", version, name)
 	fmt.Printf(res)
+	fmt.Println("headerNum: ", headerNum)
 	return res
 }
 
@@ -61,7 +63,11 @@ func hello(c echo.Context) error {
 }
 
 func headers(c echo.Context) error {
-	for i := 0; i < headerNum; i++ {
+	headerCount, err := strconv.Atoi(headerNum)
+	if err != nil {
+		panic(err)
+	}
+	for i := 0; i < headerCount; i++ {
 		c.Response().Header().Add("X-", fmt.Sprintf("%v", i))
 	}
 	fmt.Printf("============>headers")
