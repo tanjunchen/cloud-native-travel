@@ -1,0 +1,8 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: minimal
+  meshConfig:
+    configSources:
+      - address: xds://mcp-sample.default.svc.cluster.local:15010
+      - address: k8s://
