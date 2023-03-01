@@ -37,3 +37,5 @@ kubectl -n istio-system exec -it istiod-5dcbbcf9b4-m9j6n -- curl localhost:8080/
 [mcp-design]: https://docs.google.com/document/d/1lHjUzDY-4hxElWN7g6pz-_Ws7yIPt62tmX3iGs_uLyI/
 
 [istio-cfgsrc]: https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#ConfigSource
+
+[mcpoverxds]: https://github.com/zirain/mcpoverxds
