@@ -4,9 +4,15 @@
 
 ## 微信公众号
 
+欢迎大家关注本人的微信公众号，一起在艰难的现在共勉未来！！！
+
 ![1](image/weixin.jpg)
 
 可参考 [微信](weixin/readme.md)
+
+## 开源社区
+
+如何参与开源社区提升认知与自我能力，可参考 [开源社区](participate-community/readme.md)
 
 ## kubernetes
 
@@ -28,9 +34,13 @@
 
 可参考 [网络](networking/readme.md)
 
-## ebpf
+## eBPF
 
-可参考 [ebpf](ebpf/readme.md)
+可参考 [eBPF](eBPF/readme.md)
+
+## 学习
+
+可参考 [learn](learn/readme.md)
 
 ## 算法
 
