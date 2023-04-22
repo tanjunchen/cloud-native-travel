@@ -2,11 +2,12 @@ package Chapter01
 
 import (
 	"fmt"
-	"golang.org/x/net/html"
 	"io"
 	"net/http"
 	"os"
 	"testing"
+
+	"golang.org/x/net/html"
 )
 
 // go test -v -run TestStart practice5.1_test.go -args https://www.baidu.com
@@ -30,7 +31,7 @@ func Start() {
 	}
 }
 
-func visit(links [] string, n *html.Node) []string {
+func visit(links []string, n *html.Node) []string {
 	if n.Type == html.ElementNode && n.Data == "a" {
 		for _, a := range n.Attr {
 			if a.Key == "href" {
