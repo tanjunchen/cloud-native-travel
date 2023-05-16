@@ -1334,3 +1334,7 @@ task-pv-claim   Bound    task-pv-volume   10Gi       RWO            manual      
 
 [参考文献](https://medium.com/bb-tutorials-and-thoughts/practice-enough-with-these-questions-for-the-ckad-exam-2f42d1228552
 )
+
+## 更多
+
+更多详细内容可参见：[CKAD-exercises](https://github.com/dgkanatsios/CKAD-exercises)

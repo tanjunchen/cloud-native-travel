@@ -13,7 +13,6 @@ COPY . /go/src/
 RUN go mod download
 RUN go generate && go build -o load-bypass .
 
-
 FROM gcr.io/distroless/static
 COPY --from=allbuild /go/src/load-bypass /bpf/
 

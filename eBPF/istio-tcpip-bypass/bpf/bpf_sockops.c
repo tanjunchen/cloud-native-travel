@@ -41,7 +41,9 @@ static inline void bpf_sock_ops_passive_establish_cb(struct bpf_sock_ops *skops)
     if (original_dst == NULL) {
         return;
     }
-    /* update map_proxy */
+    /* update map_proxy 
+    更新 map_proxy 
+    */
     proxy_key.local = key.remote;
     proxy_key.remote = *original_dst;
     proxy_val.local = key.local;
@@ -74,7 +76,9 @@ SEC("sockops")
 int bpf_sockmap(struct bpf_sock_ops *skops)
 {
     if (!(skops->family == AF_INET || skops->remote_ip4)) {
-        /* support dual-stack socket */
+        /* support dual-stack socket 
+        未来支持双栈特性
+        */
         return 0;
     }
     bpf_sock_ops_cb_flags_set(skops, BPF_SOCK_OPS_STATE_CB_FLAG);

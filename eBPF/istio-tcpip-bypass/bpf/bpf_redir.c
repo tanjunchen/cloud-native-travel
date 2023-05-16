@@ -12,9 +12,13 @@ int bpf_redir_proxy(struct sk_msg_md *msg)
     uint32_t debug_on_index = 0;
     uint32_t debug_pckts_index = 1;
     struct socket_4_tuple proxy_key = {};
-    /* for inbound traffic */
+    /* for inbound traffic 
+    处理 inboud 流量
+    */
     struct socket_4_tuple key = {};
-    /* for outbound and envoy<->envoy traffic*/
+    /* for outbound and envoy<->envoy traffic
+    处理 envoy<->envoy outbound 流量
+    */
     struct socket_4_tuple *key_redir = NULL;
     sk_msg_extract4_keys(msg, &proxy_key, &key);
     if (key.local.ip4 == INBOUND_ENVOY_IP || key.remote.ip4 == INBOUND_ENVOY_IP) {
@@ -31,7 +35,6 @@ int bpf_redir_proxy(struct sk_msg_md *msg)
         if (debug_val_ptr && *debug_val_ptr == 1) {
             char info_fmt[] = "data redirection succeed: [%x]->[%x]\n";
             bpf_trace_printk(info_fmt, sizeof(info_fmt), proxy_key.local.ip4, proxy_key.remote.ip4);
-
             debug_val_ptr = bpf_map_lookup_elem(&debug_map, &debug_pckts_index);
             if (debug_val_ptr == NULL) {
                 debug_val = 0;
