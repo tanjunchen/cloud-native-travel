@@ -12,3 +12,6 @@ eBPF 的主要应用场景，包括故障诊断、网络优化、安全控制、
 
 https://www.tcpdump.org/papers/bpf-usenix93.pdf
 
+## 学习案例
+
+具体可参见：[istio-tcpip-bypass](https://github.com/tanjunchen/istio-tcpip-bypass)
