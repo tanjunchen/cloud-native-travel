@@ -3,10 +3,9 @@
 set -e
 
 src_repo=xxx.com
+source_user=xxx
 
 dest_repo=xxx.com
-
-source_user=xxx
 dest_user=xxx
 
 while read sc_image; do
