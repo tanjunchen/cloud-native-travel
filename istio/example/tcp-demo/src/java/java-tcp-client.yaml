@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-java-echo-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tcp-java-echo-client
+  template:
+    metadata:
+      labels:
+        app: tcp-java-echo-client
+    spec:
+      containers:
+        - name: tcp-java-echo-client
+          image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/tcp-java-client:v1.0
+          imagePullPolicy: IfNotPresent
+          command: ["java", "-jar","/client.jar"]
+          args: ["1",TCP,TCPPORT] ## 注意替换 TCP TCPPORT 中的值

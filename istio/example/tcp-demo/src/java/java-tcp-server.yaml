@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tcp-java-echo-server
+  labels:
+    app: tcp-java-echo-server
+spec:
+  ports:
+    - name: tcp
+      port: 8888
+      nodePort: 31888
+  selector:
+    app: tcp-java-echo-server
+  type: NodePort
+
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-java-echo-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tcp-java-echo-server
+  template:
+    metadata:
+      labels:
+        app: tcp-java-echo-server
+    spec:
+      containers:
+        - name: tcp-java-server
+          image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/tcp-java-server:v1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8888

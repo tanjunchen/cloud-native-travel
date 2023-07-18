@@ -1,0 +1,17 @@
+istio/networking/v1alpha3/virtualservices
+istio/networking/v1alpha3/destinationrules
+istio/networking/v1alpha3/envoyfilters
+istio/networking/v1alpha3/sidecars
+istio/authentication/v1alpha1/policies
+istio/networking/v1alpha3/gateways
+istio/networking/v1alpha3/serviceentries
+istio/config/v1alpha2/httpapispecs
+istio/mixer/v1/config/client/quotaspecs
+istio/mixer/v1/config/client/quotaspecbindings
+istio/rbac/v1alpha1/servicerolebindings
+istio/rbac/v1alpha1/clusterrbacconfigs
+istio/security/v1beta1/authorizationpolicies
+istio/config/v1alpha2/httpapispecbindings
+istio/authentication/v1alpha1/meshpolicies
+istio/rbac/v1alpha1/serviceroles
+istio/rbac/v1alpha1/rbacconfigs

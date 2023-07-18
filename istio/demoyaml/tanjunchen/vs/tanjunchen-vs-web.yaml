@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: web-svc-vs
+  namespace: tanjunchen
+spec:
+  hosts:
+  - web-svc.tanjunchen.svc.cluster.local
+  http:
+  - route:
+    - destination:
+        host: tomcat-svc.tanjunchen.svc.cluster.local
+      weight: 20
+    - destination:
+        host: httpd-svc.tanjunchen.svc.cluster.local
+      weight: 80
