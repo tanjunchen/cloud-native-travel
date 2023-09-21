@@ -1,0 +1,23 @@
+FROM golang:1.20.2-alpine3.16 AS build-env
+ADD . /src
+ENV GOPROXY https://goproxy.cn
+# RUN cd /src && GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o goapp
+RUN cd /src && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o goapp
+#RUN cd /src && CGO_ENABLED=0 go build -o goapp
+
+FROM alpine:3.15
+RUN apk update \
+ && apk upgrade \
+ && apk add --no-cache bash \
+ bash-doc \
+ bash-completion \
+ && rm -rf /var/cache/apk/* \
+ && /bin/bash
+
+ARG service_version
+ENV SERVICE_VERSION ${service_version:-dev}
+
+WORKDIR /app
+COPY --from=build-env /src/goapp /app/
+
+ENTRYPOINT ["./goapp"]

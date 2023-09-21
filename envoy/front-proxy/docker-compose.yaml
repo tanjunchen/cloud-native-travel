@@ -1,0 +1,42 @@
+version: '3.7'
+services:
+
+  front-envoy:
+    #image: envoyproxy/envoy:dev-47d28ec3ecea45486305fb850cdbd85428d90fa3
+    image: envoyproxy/envoy:v1.26.4
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+    networks:
+      - envoymesh
+    expose:
+      # Expose ports 8000 (for general traffic) and 8001 (for the admin server)
+      - "8000"
+      - "8001"
+    ports:
+      # Map the host port 8000 to container port 8000, and the host port 8001 to container port 8001
+      - "8000:8000"
+      - "8001:8001"
+
+  version_v1:
+    image: docker.io/tanjunchen/version:v1
+    networks:
+      envoymesh:
+        aliases:
+          - version_v1
+    environment:
+      - VERSION=v1
+    expose:
+      - "9000"
+  version_v2:
+    image: docker.io/tanjunchen/version:v2
+    networks:
+      envoymesh:
+        aliases:
+          - version_v2
+    environment:
+      - VERSION=v2
+    expose:
+      - "9000"
+
+networks:
+  envoymesh: {}

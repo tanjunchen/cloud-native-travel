@@ -2,11 +2,9 @@
 
 set -o errexit
 
-# Docker build variables
-ENABLE_MULTIARCH_IMAGES=${ENABLE_MULTIARCH_IMAGES:-"true"}
 REPO=${REPO:-"docker.io"}
 PREFIX=${PREFIX:-"tanjunchen"}
-VERSION=${VERSION:-"header-v1"}
+VERSION=${VERSION:-"latest-arm"}
 
-docker build -t "${REPO}/${PREFIX}/examples-helloworld-v1:${VERSION}" --build-arg service_version=header .
-docker push "${REPO}/${PREFIX}/examples-helloworld-v1:${VERSION}"
+docker build --no-cache=true --platform=linux/arm64 -t "${REPO}/${PREFIX}/helloworld-v1:${VERSION}" --build-arg service_version=v1 .
+docker push "${REPO}/${PREFIX}/helloworld-v1:${VERSION}"
