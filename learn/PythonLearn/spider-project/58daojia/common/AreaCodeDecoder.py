@@ -8,7 +8,7 @@ class AreaCodeDecoder(object):
     current_path = os.path.dirname(__file__)
 
     def __init__(self, del_file="jieba_del.txt", areacode_file="areacode.txt", area_json_file="china_city_area.json",
-                 baidu_ak="eXiTVqhBbnU7TeF3WrtGAvxXkIUXBRwg"):
+                 baidu_ak="xxx"):
         self.cities = dict()
         with open(os.path.join(self.current_path, del_file), encoding="utf8") as file:
             for word in file:
