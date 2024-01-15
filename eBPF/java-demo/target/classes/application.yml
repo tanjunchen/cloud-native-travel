@@ -1,0 +1,5 @@
+server:
+  port: 9999 # 端口
+spring:
+  application:
+    name: consumer-demo # 应用名称
