@@ -1,16 +1,31 @@
-FROM alpine:3.16 as build
-#ARG WRK2_COMMIT_HASH=44a94c17d8e6a0bac8559b53da76848e430cb7a7
-# Install deps and build from source
-RUN apk add --no-cache openssl-dev zlib-dev git make gcc musl-dev
-RUN git clone https://github.com/giltene/wrk2 && cd wrk2 && make
+FROM ubuntu:22.04
 
+RUN apt-get -y update \
+    && apt-get -y install build-essential libssl-dev git zlib1g-dev
 
-FROM alpine:3.16
-# it seems libgcc_s.so is dynamically linked so we need to install libgcc
-RUN apk add --no-cache libgcc
-#RUN adduser wrk_user -D -H
-#USER wrk_user
+RUN git clone https://github.com/wg/wrk.git wrk \
+    && cd wrk \
+    && make
 
-COPY --from=build /wrk2/wrk /usr/bin/wrk2
-ENTRYPOINT ["/usr/bin/wrk2"]
+RUN git clone https://github.com/giltene/wrk2.git wrk2 \
+    && cd wrk2 \
+    && make
 
+RUN cp wrk/wrk /usr/local/bin
+RUN mv wrk2/wrk /usr/local/bin/wrk2
+
+HEALTHCHECK CMD exit 0
+
+# FROM alpine:3.16 as build
+
+# CMD ["/bin/sh"]
+
+# WORKDIR /app
+
+# RUN apk add --update alpine-sdk openssl-dev zlib-dev git make gcc musl-dev
+
+# RUN apk add --no-cache git && git clone https://github.com/giltene/wrk2.git && cd wrk2 && make && mv wrk /usr/local/bin/wrk2
+
+# RUN git clone https://github.com/wg/wrk.git && cd wrk && make && mv wrk /usr/local/bin/wrk
+
+# ENTRYPOINT ["/bin/sh" "-c" "while sleep 864000; do :; done"]

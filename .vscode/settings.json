@@ -1,0 +1,5 @@
+{
+    "notebook.diff.enablePreview": false,
+    "workbench.editor.enablePreview": false,
+    "editor.rename.enablePreview": false
+}

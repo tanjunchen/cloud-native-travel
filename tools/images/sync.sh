@@ -2,15 +2,15 @@
  
 set -e
  
-dst_user=tanjunchen
-dst_repo=docker.io
+dst_user=istio
+dst_repo=10.124.142.91
 
 # image 示例
+# "tanjunchen/wrk2:latest"
+# "tanjunchen/goapp-ebpf:latest"
+# "tanjunchen/coroot-node-agent:39492e3da86f"
 images=(
-    "tanjunchen/cylab-wrk2:3328da12614b"
-    "tanjunchen/wrk-wrk2:latest"
-    "tanjunchen/goapp-ebpf:latest"
-    "tanjunchen/coroot-node-agent:39492e3da86f"
+    "haydenjeune/wrk2:latest"
 )
 
 pull_tag_push_image(){
@@ -20,10 +20,10 @@ pull_tag_push_image(){
         then
         continue
         fi
-        echo "docker pull ${image}"
+        echo "docker pull --platform=linux/amd64 ${image}"
     
         docker pull ${image}
-        echo "docker pull ${image} success!!!"
+        echo "docker pull --platform=linux/amd64 ${image} success!!!"
         
         array=(`echo ${image} | tr ':' ' '` )
         src_image=${array[0]}
