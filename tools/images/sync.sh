@@ -22,7 +22,7 @@ pull_tag_push_image(){
         fi
         echo "docker pull --platform=linux/amd64 ${image}"
     
-        docker pull ${image}
+        docker pull --platform=linux/amd64 ${image}
         echo "docker pull --platform=linux/amd64 ${image} success!!!"
         
         array=(`echo ${image} | tr ':' ' '` )

@@ -1,0 +1,13 @@
+.svn
+.tmp
+.download
+output
+.*.swp
+.*.swo
+.idea
+log
+version
+
+.vscode
+.DS_Store
+cmd/tmp
